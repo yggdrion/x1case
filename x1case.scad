@@ -42,36 +42,33 @@ fake_grooves = true;      // mirrored decorative grooves
 groove_w = 1.2;           // V-groove width at the surface
 
 /* [Mainboard: PLACEHOLDERS] */
-board_w = 320;            // PLACEHOLDER board outline width
+board_w = 280;            // PLACEHOLDER board outline width
 board_h = 100;            // PLACEHOLDER board outline height
 board_t = 1.2;
 board_top_gap = 15;       // board top edge to panel top edge
 // PLACEHOLDER mounting holes, relative to the board's bottom-left corner
-board_holes = [[5, 5], [315, 5], [5, 95], [315, 95], [160, 95]];
+board_holes = [[5, 5], [275, 5], [5, 95], [275, 95], [140, 95]];
 heatsink_pos = [150, 30]; // PLACEHOLDER relative to the board origin
 heatsink_size = [130, 60];
 heatsink_h = 14;          // PLACEHOLDER tallest part on the back side (heatsink + blowers)
 comp_h = 5;               // PLACEHOLDER tallest part under the fan (RAM, SSD)
 m2_insert_d = 3.2;        // M2 heat-set insert hole
 m2_insert_depth = 4;
-// Side ports: [side "L"/"R", y centre rel. board, z offset from the board's back face, w (along Y), h (along Z), name]
-ports = [
-  ["L", 15, 3, 12, 6, "dc_in"],      // PLACEHOLDER
-  ["L", 32, 3, 9.5, 4, "tb3_1"],     // PLACEHOLDER
-  ["L", 46, 3, 9.5, 4, "tb3_2"],     // PLACEHOLDER
-  ["L", 64, 3, 15.5, 6, "hdmi"],     // PLACEHOLDER
-  ["L", 82, 3, 7, 7, "audio"],       // PLACEHOLDER
-  ["R", 20, 3, 14, 7, "usb_a_1"],    // PLACEHOLDER
-  ["R", 40, 3, 14, 7, "usb_a_2"],    // PLACEHOLDER
-  ["R", 62, 1.5, 26, 3, "sd"],       // PLACEHOLDER
-];
+// Only the board's DC-in is used. The charger enters through the case DC jack and an
+// internal cable plugs into the board, so the case only needs room for that plug.
+dc_in_side = "L";         // PLACEHOLDER board edge with the DC-in
+dc_in_y = 15;             // PLACEHOLDER DC-in centre, rel. board bottom edge
+dc_plug_len = 35;         // straight plug + strain relief + cable bend
+// Optional side-wall cutouts (none by default):
+// [side "L"/"R", y centre rel. board, z offset from the board's back face, w (along Y), h (along Z), name]
+ports = [];
 port_clear = 1;           // extra opening around each port
 edp_cut = [40, 15];       // PLACEHOLDER eDP/touch flex passage in the backer (w, h)
 edp_pos = [0, 25];        // PLACEHOLDER offset of its centre from the panel's bottom centre
 
 /* [Fan] */
 fan_size = 120;
-fan_t = 15;               // Noctua NF-A12x15 = 15, standard 120 mm = 25
+fan_t = 25;               // standard 120 mm = 25, slim (NF-A12x15) = 15
 fan_clear = 3;            // gap between the board parts and the fan
 fan_hole_pitch = 105;
 fan_hole_d = 4.4;
@@ -172,6 +169,8 @@ for (s = seams) {
   if (s > fan_rect[0] - 3 && s < fan_rect[0] + fan_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the fan"));
   if (s > vesa_rect[0] - 3 && s < vesa_rect[0] + vesa_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the VESA pad"));
 }
+dc_room = dc_in_side == "L" ? board_pos[0] - shell_wall : W - shell_wall - board_pos[0] - board_w;
+if (dc_room < dc_plug_len) echo(str("WARNING: only ", dc_room, " mm between board DC-in and side wall, plug needs ", dc_plug_len, " (use an angled plug or shrink board_w/move the board)"));
 
 // ---------------------------------------------------------------- helpers
 module rrect(w, h, r) {
@@ -292,7 +291,7 @@ module shell_full() {
     for (x = [vent_end : vent_pitch : W - vent_end])
       if (min([for (s = concat(screw_x, seams)) abs(x - s)]) > boss_d / 2 + 2)
         for (y = [-1, H - shell_wall - 1]) translate([x - vent_w / 2, y, zb + rim_t + 2]) cube([vent_w, shell_wall + 2, z_in - zb - rim_t - 4]);
-    // side ports, ESP32 USB-C, DC jack
+    // optional side ports, ESP32 USB-C, DC jack
     for (p = ports) port_cut(p);
     translate([W - shell_wall - 1, esp_y + esp_size[1] / 2, z_in - 3.2]) rotate([0, 90, 0]) linear_extrude(shell_wall + 2) rrect(4.5, 10, 1.5);
     translate([W - shell_wall - 1, dc_jack_y, (zb + z_in) / 2]) rotate([0, 90, 0]) cylinder(d = dc_jack_d, h = shell_wall + 2);
@@ -309,6 +308,8 @@ module ghosts() {
   %translate([hs_rect[0], hs_rect[1], z_board_back]) cube([hs_rect[2], hs_rect[3], heatsink_h]);
   %translate([fan_rect[0], fan_rect[1], z_in - fan_t]) cube([fan_size, fan_size, fan_t]);
   %translate([W - shell_wall - esp_size[0], esp_y, z_in - 1.6]) cube([esp_size[0], esp_size[1], 1.6]);
+  // DC-in plug keep-out
+  %translate([dc_in_side == "L" ? board_pos[0] - dc_plug_len : board_pos[0] + board_w, board_pos[1] + dc_in_y - 6, z_board_back]) cube([dc_plug_len, 12, 10]);
 }
 
 // ---------------------------------------------------------------- parts

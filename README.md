@@ -13,7 +13,7 @@ The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.
 | Bezel lip + panel pocket | `frame_*` | 3 pieces, printed front face down. M3 heat-set inserts in the 7 mm border |
 | Backer plate | `backer_*` | 3 pieces. Holds the panel flat and carries the board standoffs (M2 inserts) |
 | Air gap, board + stock heatsink/blowers | — | Board top side faces the panel, heatsink side faces the back |
-| Back shell | `shell_*` | 3 pieces, printed back face down. 120 mm fan grille, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, side port cutouts, top/bottom vents |
+| Back shell | `shell_*` | 3 pieces, printed back face down. 120 mm fan grille, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, DC jack, top/bottom vents. No board port cutouts: only DC-in is used, through an internal cable |
 
 The shell's front rim clamps the backer, and the backer clamps the panel against the lip. Shell screws (M3 × 12) go in from the back through counterbored bosses into the frame inserts.
 
@@ -28,7 +28,7 @@ Seams sit at `seams = [133, 263]`, giving pieces of about 133 / 130 / 102 × 231
 
 ## Cooling and power
 
-- The stock heatpipe and blowers stay. The 120 mm fan (NF-A12x15 by default, `fan_t = 25` for a standard fan) pulls air from the bottom vents across the board and out the back. The top vents act as a chimney.
+- The stock heatpipe and blowers stay. The 120 mm × 25 mm fan (`fan_t = 15` for a slim NF-A12x15) pulls air from the bottom vents across the board and out the back. The top vents act as a chimney.
 - The charger plugs into a DC jack on the right wall. It feeds the board's DC-in, a 12 V buck for the fan and a 5 V buck for the ESP32.
 - The ESP32-C3 SuperMini runs standalone. DS18B20 sensors on the heatsink, VRM area and exhaust set a firmware fan curve: 25 kHz PWM, tach read back, 100 % if a sensor fails. Its USB-C port is reachable through the right wall.
 
@@ -39,10 +39,12 @@ Seams sit at `seams = [133, 263]`, giving pieces of about 133 / 130 / 102 × 231
 
 ## Still to measure
 
+See [docs/measure.png](docs/measure.png) (numbered drawing) and [docs/measurements.md](docs/measurements.md) (fill-in list).
+
 1. Panel outline, thickness, active area and offset, and eDP/touch connector position (`panel_*`, `active_*`, `edp_*`)
 2. Board outline, mounting holes, heatsink footprint and height, tallest parts (`board_*`, `heatsink_*`, `comp_h`)
 3. eDP cable length, which limits how far `board_pos` can sit from the panel connector
-4. Port positions and sizes along both board edges (`ports`)
+4. DC-in position and plug length (`dc_in_*`, `dc_plug_len`). The render warns when the plug doesn't fit between the board and the side wall
 
 ## Render
 
