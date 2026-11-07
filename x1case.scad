@@ -1,0 +1,341 @@
+// x1case.scad: all-in-one case for a Lenovo ThinkPad X1 Extreme Gen 1.
+// The 4K touch panel sits at the front. The mainboard sits behind it on a backer plate.
+// A 120 mm assist fan (ESP32-controlled) and a VESA 100 mount go in the back shell.
+//
+// Coordinates: X = width (left to right, seen from the front), Y = height (bottom to top),
+// Z = depth (z = 0 is the front face, +Z goes toward the back).
+//
+// Every value marked PLACEHOLDER is a guess. Measure the real part and replace it.
+//
+// Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
+
+part = "assembly"; // [assembly, frame_l, frame_m, frame_r, backer_l, backer_m, backer_r, shell_l, shell_m, shell_r]
+
+/* [Print] */
+bed = 256;          // Bambu Lab P2S bed (mm)
+bed_margin = 4;     // keep-out at the bed edge
+
+/* [Panel: PLACEHOLDERS, measure the 4K touch panel] */
+panel_w = 350.7;    // PLACEHOLDER glass outline width
+panel_h = 216.9;    // PLACEHOLDER glass outline height
+panel_t = 3.5;      // PLACEHOLDER thickness incl. touch layer
+active_w = 344.2;   // PLACEHOLDER active area width
+active_h = 193.6;   // PLACEHOLDER active area height
+active_off = [3.2, 10.0]; // PLACEHOLDER active area offset from the panel's bottom-left corner
+win_margin = 0.5;   // window overlap past the active area
+fit = 0.3;          // panel clearance per side
+
+/* [Case] */
+border = 7;         // solid frame border around the panel (holds the M3 inserts)
+lip_t = 2;          // front bezel lip thickness
+backer_t = 2;       // backer plate behind the panel
+gap = 5;            // air gap between backer and board (= board standoff height)
+shell_wall = 3;     // back shell side walls
+back_t = 2.5;       // back shell rear plate
+rim_t = 3;          // shell front rim that clamps the backer
+rim_over = 2;       // how far the rim reaches past the frame border onto the backer
+tol = 0.2;          // dovetail glue gap (total)
+
+/* [Split: seams must avoid the fan and VESA bosses] */
+seams = [133, 263];       // real seams (X positions), glued dovetails
+fake_grooves = true;      // mirrored decorative grooves
+groove_w = 1.2;           // V-groove width at the surface
+
+/* [Mainboard: PLACEHOLDERS] */
+board_w = 320;            // PLACEHOLDER board outline width
+board_h = 100;            // PLACEHOLDER board outline height
+board_t = 1.2;
+board_top_gap = 15;       // board top edge to panel top edge
+// PLACEHOLDER mounting holes, relative to the board's bottom-left corner
+board_holes = [[5, 5], [315, 5], [5, 95], [315, 95], [160, 95]];
+heatsink_pos = [150, 30]; // PLACEHOLDER relative to the board origin
+heatsink_size = [130, 60];
+heatsink_h = 14;          // PLACEHOLDER tallest part on the back side (heatsink + blowers)
+comp_h = 5;               // PLACEHOLDER tallest part under the fan (RAM, SSD)
+m2_insert_d = 3.2;        // M2 heat-set insert hole
+m2_insert_depth = 4;
+// Side ports: [side "L"/"R", y centre rel. board, z offset from the board's back face, w (along Y), h (along Z), name]
+ports = [
+  ["L", 15, 3, 12, 6, "dc_in"],      // PLACEHOLDER
+  ["L", 32, 3, 9.5, 4, "tb3_1"],     // PLACEHOLDER
+  ["L", 46, 3, 9.5, 4, "tb3_2"],     // PLACEHOLDER
+  ["L", 64, 3, 15.5, 6, "hdmi"],     // PLACEHOLDER
+  ["L", 82, 3, 7, 7, "audio"],       // PLACEHOLDER
+  ["R", 20, 3, 14, 7, "usb_a_1"],    // PLACEHOLDER
+  ["R", 40, 3, 14, 7, "usb_a_2"],    // PLACEHOLDER
+  ["R", 62, 1.5, 26, 3, "sd"],       // PLACEHOLDER
+];
+port_clear = 1;           // extra opening around each port
+edp_cut = [40, 15];       // PLACEHOLDER eDP/touch flex passage in the backer (w, h)
+edp_pos = [0, 25];        // PLACEHOLDER offset of its centre from the panel's bottom centre
+
+/* [Fan] */
+fan_size = 120;
+fan_t = 15;               // Noctua NF-A12x15 = 15, standard 120 mm = 25
+fan_clear = 3;            // gap between the board parts and the fan
+fan_hole_pitch = 105;
+fan_hole_d = 4.4;
+fan_pos_x = 0;            // 0 = flush against the left wall (+ 2 mm)
+
+/* [VESA 100] */
+vesa = 100;
+vesa_insert_d = 5.7;      // M4 heat-set insert hole
+vesa_insert_depth = 8.5;
+vesa_boss_d = 14;
+vesa_boss_h = 7;          // inside the shell, from the back plate
+rib_t = 3;
+rib_h = 6;
+
+/* [Shell screws: M3 x 12 into heat-set inserts in the frame] */
+screw_inset = 15;         // from each piece's edges
+side_screw_y_rel = [0.2]; // side-wall screws as a fraction of H (keep clear of ports)
+boss_d = 10;
+screw_floor = 8;          // material under the counterbore
+m3_clear = 3.4;
+m3_head = 6.5;
+m3_insert_d = 4.0;
+m3_insert_depth = 5.5;
+
+/* [Electronics bay, right piece] */
+esp_size = [23.5, 18.5];  // ESP32-C3 SuperMini, USB-C toward the right wall
+esp_y = 40;
+buck_size = [22, 17];     // MP1584-style buck, x2 (12 V fan, 5 V ESP32)
+buck_y = [70, 95];
+cradle_wall = 1.6;
+cradle_h = 4;
+dc_jack_d = 8;            // 5.5/2.1 panel jack for the charger
+dc_jack_y = 20;
+
+/* [Vents] */
+vent_w = 3;
+vent_pitch = 7;
+vent_end = 20;            // keep vents this far from the side walls
+
+/* [Assembly view] */
+explode = 0;
+show_ghosts = true;
+
+$fn = 48;
+
+// ---------------------------------------------------------------- derived
+W = panel_w + 2 * (border + fit);
+H = panel_h + 2 * (border + fit);
+px0 = border + fit;                 // panel origin
+py0 = border + fit;
+z_backer = lip_t + panel_t;
+zb = z_backer + backer_t;           // frame back face = shell front face
+z_board = zb + gap;                 // board front face
+z_board_back = z_board + board_t;
+inner_d = gap + board_t + max(heatsink_h, comp_h + fan_t + fan_clear);
+D = zb + inner_d + back_t;          // total depth
+z_in = D - back_t;                  // inside face of the back plate
+
+board_pos = [(W - board_w) / 2, H - py0 - board_top_gap - board_h];
+win = [px0 + active_off[0] - win_margin, py0 + active_off[1] - win_margin,
+       active_w + 2 * win_margin, active_h + 2 * win_margin];
+
+bounds = concat([0], seams, [W]);
+fan_c = [shell_wall + 2 + fan_pos_x + fan_size / 2, H / 2];
+vesa_c = [(seams[0] + seams[len(seams) - 1]) / 2, H / 2];
+groove_x = fake_grooves ? concat(seams, [for (s = seams) W - s]) : seams;
+
+screw_x = [for (i = [0 : len(bounds) - 2]) each [bounds[i] + screw_inset, bounds[i + 1] - screw_inset]];
+screw_pts = concat(
+  [for (x = screw_x) [x, border / 2]],
+  [for (x = screw_x) [x, H - border / 2]],
+  [for (f = side_screw_y_rel) [border / 2, H * f]],
+  [for (f = side_screw_y_rel) [W - border / 2, H * f]]);
+
+// Dovetail tabs per part: [y, neck, head, length]
+frame_tabs = [[border / 2, 3, 5, 4], [H - border / 2, 3, 5, 4],
+              [(border + win[1]) / 2, 5, 8, 4], [(win[1] + win[3] + H - border) / 2, 5, 8, 4]];
+shell_tabs = [[4.5, 3, 5, 4], [H - 4.5, 3, 5, 4],
+              [H * 0.25, 6, 10, 5], [H * 0.5, 6, 10, 5], [H * 0.75, 6, 10, 5]];
+backer_tabs = [[py0 + panel_h * 0.2, 6, 10, 5], [py0 + panel_h * 0.5, 6, 10, 5],
+               [py0 + panel_h * 0.8, 6, 10, 5]];
+
+// ---------------------------------------------------------------- checks
+function rects_overlap(a, b) = a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3];
+fan_rect = [fan_c[0] - fan_size / 2, fan_c[1] - fan_size / 2, fan_size, fan_size];
+hs_rect = [board_pos[0] + heatsink_pos[0], board_pos[1] + heatsink_pos[1], heatsink_size[0], heatsink_size[1]];
+vesa_rect = [vesa_c[0] - vesa / 2 - vesa_boss_d / 2, vesa_c[1] - vesa / 2 - vesa_boss_d / 2, vesa + vesa_boss_d, vesa + vesa_boss_d];
+
+echo(str("Case outer W x H x D = ", W, " x ", H, " x ", D, " mm"));
+for (i = [0 : len(bounds) - 2]) {
+  w = bounds[i + 1] - bounds[i];
+  if (w > bed - 2 * bed_margin || H > bed - 2 * bed_margin)
+    echo(str("WARNING: piece ", i, " (", w, " x ", H, ") does not fit the bed"));
+}
+if (rects_overlap(fan_rect, hs_rect)) echo("WARNING: fan footprint overlaps the heatsink (depth budget assumes it does not)");
+if (rects_overlap(fan_rect, vesa_rect)) echo("WARNING: fan overlaps the VESA bosses");
+for (s = seams) {
+  if (s > fan_rect[0] - 3 && s < fan_rect[0] + fan_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the fan"));
+  if (s > vesa_rect[0] - 3 && s < vesa_rect[0] + vesa_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the VESA pad"));
+}
+
+// ---------------------------------------------------------------- helpers
+module rrect(w, h, r) {
+  r2 = min(r, w / 2, h / 2);
+  offset(r = r2) square([w - 2 * r2, h - 2 * r2], center = true);
+}
+
+// V-grooves on the front, back, top and bottom faces
+module grooves() {
+  s = groove_w / sqrt(2);
+  for (x = groove_x) {
+    translate([x, H / 2, 0]) rotate([0, 45, 0]) cube([s, H + 2, s], center = true);
+    // back face: stop short of the fan grille
+    if (x > fan_c[0] - fan_size / 2 && x < fan_c[0] + fan_size / 2) {
+      for (seg = [[-1, fan_c[1] - fan_size / 2], [fan_c[1] + fan_size / 2, H + 1]])
+        translate([x, (seg[0] + seg[1]) / 2, D]) rotate([0, 45, 0]) cube([s, seg[1] - seg[0], s], center = true);
+    } else translate([x, H / 2, D]) rotate([0, 45, 0]) cube([s, H + 2, s], center = true);
+    for (y = [0, H]) translate([x, y, D / 2]) rotate([0, 0, 45]) cube([s, s, D + 2], center = true);
+  }
+}
+
+// 2D region left of seam i, including that seam's dovetail tabs
+module seam_region(i, tabs, grow) {
+  offset(delta = grow) union() {
+    translate([-50, -50]) square([seams[i] + 50, H + 100]);
+    for (t = tabs) translate([seams[i], t[0]])
+      polygon([[-0.01, -t[1] / 2], [t[3], -t[2] / 2], [t[3], t[2] / 2], [-0.01, t[1] / 2]]);
+  }
+}
+
+module piece_mask(i, tabs) {
+  n = len(seams);
+  translate([0, 0, -50]) linear_extrude(D + 100) difference() {
+    if (i < n) seam_region(i, tabs, -tol / 2);
+    else translate([-50, -50]) square([W + 100, H + 100]);
+    if (i > 0) seam_region(i - 1, tabs, tol / 2);
+  }
+}
+
+module split(i, tabs) intersection() { children(); piece_mask(i, tabs); }
+
+// ---------------------------------------------------------------- frame (front bezel + panel pocket)
+module frame_full() {
+  difference() {
+    cube([W, H, zb]);
+    translate([border, border, lip_t]) cube([W - 2 * border, H - 2 * border, zb]);
+    translate([win[0], win[1], -1]) cube([win[2], win[3], lip_t + 2]);
+    for (p = screw_pts) translate([p[0], p[1], zb - m3_insert_depth]) cylinder(d = m3_insert_d, h = m3_insert_depth + 1);
+    grooves();
+  }
+}
+
+// ---------------------------------------------------------------- backer (panel support, board standoffs)
+module backer_full() {
+  difference() {
+    union() {
+      translate([px0, py0, z_backer]) cube([panel_w, panel_h, backer_t]);
+      for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], zb - 0.01]) cylinder(d = 6, h = gap);
+    }
+    for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], z_board - m2_insert_depth]) cylinder(d = m2_insert_d, h = m2_insert_depth + 1);
+    translate([W / 2 + edp_pos[0], py0 + edp_pos[1], z_backer + backer_t / 2]) cube([edp_cut[0], edp_cut[1], backer_t + 2], center = true);
+  }
+}
+
+// ---------------------------------------------------------------- shell (back cover)
+module cradle(size, open_right) {
+  w = cradle_wall;
+  difference() {
+    translate([-w, -w, -cradle_h]) cube([size[0] + 2 * w, size[1] + 2 * w, cradle_h]);
+    translate([0, 0, -cradle_h - 1]) cube([size[0] + (open_right ? w + 1 : 0), size[1], cradle_h + 2]);
+  }
+}
+
+module port_cut(p) {
+  y = board_pos[1] + p[1];
+  z = z_board_back + p[2];
+  x = p[0] == "L" ? -1 : W - shell_wall - 1;
+  translate([x, y, z]) rotate([0, 90, 0]) linear_extrude(shell_wall + 2)
+    rrect(p[4] + 2 * port_clear, p[3] + 2 * port_clear, 1);
+}
+
+module shell_full() {
+  esp_x = W - shell_wall - esp_size[0];
+  difference() {
+    union() {
+      difference() {
+        translate([0, 0, zb]) cube([W, H, D - zb]);
+        translate([shell_wall, shell_wall, zb - 1]) cube([W - 2 * shell_wall, H - 2 * shell_wall, z_in - zb + 1]);
+      }
+      // front rim, clamps the backer edge
+      translate([0, 0, zb]) difference() {
+        cube([W, H, rim_t]);
+        translate([border + rim_over, border + rim_over, -1]) cube([W - 2 * (border + rim_over), H - 2 * (border + rim_over), rim_t + 2]);
+      }
+      for (p = screw_pts) translate([p[0], p[1], zb]) cylinder(d = boss_d, h = D - zb);
+      // VESA bosses + ribs
+      for (dx = [-1, 1], dy = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2, vesa_c[1] + dy * vesa / 2, z_in - vesa_boss_h]) cylinder(d = vesa_boss_d, h = vesa_boss_h + 0.01);
+      for (dx = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2 - rib_t / 2, shell_wall, z_in - rib_h]) cube([rib_t, H - 2 * shell_wall, rib_h + 0.01]);
+      for (dy = [-1, 1]) translate([vesa_c[0] - vesa / 2, vesa_c[1] + dy * vesa / 2 - rib_t / 2, z_in - rib_h]) cube([vesa, rib_t, rib_h + 0.01]);
+      // electronics cradles
+      translate([esp_x, esp_y, z_in + 0.01]) cradle(esp_size, true);
+      for (y = buck_y) translate([W - shell_wall - cradle_wall - buck_size[0] - 2, y, z_in + 0.01]) cradle(buck_size, false);
+    }
+    // shell screws: clearance + counterbore from the back
+    for (p = screw_pts) {
+      translate([p[0], p[1], zb - 1]) cylinder(d = m3_clear, h = D);
+      translate([p[0], p[1], zb + screw_floor]) cylinder(d = m3_head, h = D);
+    }
+    // VESA inserts from the back
+    for (dx = [-1, 1], dy = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2, vesa_c[1] + dy * vesa / 2, D - vesa_insert_depth]) cylinder(d = vesa_insert_d, h = vesa_insert_depth + 1);
+    // fan grille (concentric rings with 4 spokes) + screw holes
+    translate([fan_c[0], fan_c[1], z_in - 1]) linear_extrude(back_t + 2) difference() {
+      union() for (r = [15 : 9 : fan_size / 2 - 5]) difference() { circle(r = r); circle(r = r - 5); }
+      for (a = [0, 90]) rotate(a + 45) square([fan_size, 4], center = true);
+    }
+    for (dx = [-1, 1], dy = [-1, 1]) translate([fan_c[0] + dx * fan_hole_pitch / 2, fan_c[1] + dy * fan_hole_pitch / 2, z_in - 1]) cylinder(d = fan_hole_d, h = back_t + 2);
+    // vents: bottom = intake, top = exhaust (chimney)
+    for (x = [vent_end : vent_pitch : W - vent_end])
+      if (min([for (s = concat(screw_x, seams)) abs(x - s)]) > boss_d / 2 + 2)
+        for (y = [-1, H - shell_wall - 1]) translate([x - vent_w / 2, y, zb + rim_t + 2]) cube([vent_w, shell_wall + 2, z_in - zb - rim_t - 4]);
+    // side ports, ESP32 USB-C, DC jack
+    for (p = ports) port_cut(p);
+    translate([W - shell_wall - 1, esp_y + esp_size[1] / 2, z_in - 3.2]) rotate([0, 90, 0]) linear_extrude(shell_wall + 2) rrect(4.5, 10, 1.5);
+    translate([W - shell_wall - 1, dc_jack_y, (zb + z_in) / 2]) rotate([0, 90, 0]) cylinder(d = dc_jack_d, h = shell_wall + 2);
+    grooves();
+  }
+}
+
+module shell_clipped() intersection() { shell_full(); cube([W, H, D]); }
+
+// ---------------------------------------------------------------- ghosts
+module ghosts() {
+  %translate([px0, py0, lip_t]) cube([panel_w, panel_h, panel_t]);
+  %translate([board_pos[0], board_pos[1], z_board]) cube([board_w, board_h, board_t]);
+  %translate([hs_rect[0], hs_rect[1], z_board_back]) cube([hs_rect[2], hs_rect[3], heatsink_h]);
+  %translate([fan_rect[0], fan_rect[1], z_in - fan_t]) cube([fan_size, fan_size, fan_t]);
+  %translate([W - shell_wall - esp_size[0], esp_y, z_in - 1.6]) cube([esp_size[0], esp_size[1], 1.6]);
+}
+
+// ---------------------------------------------------------------- parts
+names = ["l", "m", "r"];
+function idx(s) = [for (k = [0 : len(names) - 1]) if (names[k] == s) k][0];
+
+module print_frame(i) translate([-bounds[i], 0, 0]) split(i, frame_tabs) frame_full();
+module print_backer(i) translate([-bounds[i], 0, -z_backer]) split(i, backer_tabs) backer_full();
+module print_shell(i) translate([-bounds[i], 0, D]) mirror([0, 0, 1]) split(i, shell_tabs) shell_clipped();
+
+module assembly() {
+  cols = ["SteelBlue", "LightSteelBlue", "SteelBlue"];
+  for (i = [0 : len(bounds) - 2]) {
+    color(cols[i]) split(i, frame_tabs) frame_full();
+    color("Silver") translate([0, 0, explode * 0.5]) split(i, backer_tabs) backer_full();
+    color(cols[i], 0.9) translate([0, 0, explode]) split(i, shell_tabs) shell_clipped();
+  }
+  if (show_ghosts) ghosts();
+}
+
+if (part == "assembly") assembly();
+else {
+  kind = substr(part);
+  i = idx(part[len(part) - 1]);
+  if (kind == "frame") print_frame(i);
+  else if (kind == "backer") print_backer(i);
+  else if (kind == "shell") print_shell(i);
+}
+
+function substr(s) = let(p = search("_", s)[0]) chr([for (k = [0 : p - 1]) ord(s[k])]);
