@@ -16,11 +16,13 @@
   <rect width="1400" height="940" fill="#ffffff"/>
 
   <!-- ============ A: panel front ============ -->
-  <text x="40" y="45" class="ttl">A  Panel, screen side</text>
+  <text x="40" y="45" class="ttl">A  Display lid, front (hinges removed)</text>
   <rect x="80" y="100" width="520" height="300" fill="#dfe6ec" stroke="#333" stroke-width="2"/>
   <rect x="98" y="122" width="484" height="230" fill="#a9cbe8" stroke="#333"/>
   <text x="340" y="215" class="note" text-anchor="middle">lit pixels (active area)</text>
-  <text x="340" y="235" class="note" text-anchor="middle">borders = glass edge to first lit pixel</text>
+  <text x="340" y="235" class="note" text-anchor="middle">3–6 = lid outer edge to first lit pixel</text>
+  <path d="M80,124 A24,24 0 0 1 104,100" fill="none" stroke="#d1342f" stroke-width="2"/>
+  <g class="b"><circle cx="116" cy="112" r="11"/><text x="116" y="112">R</text></g>
   <!-- 1 width -->
   <line x1="80" y1="98" x2="80" y2="70" class="ext"/><line x1="600" y1="98" x2="600" y2="70" class="ext"/>
   <line x1="80" y1="78" x2="600" y2="78" class="dim"/>
@@ -42,43 +44,39 @@
   <line x1="200" y1="352" x2="200" y2="400" class="dim"/>
   <g class="b"><circle cx="224" cy="376" r="13"/><text x="224" y="376">6</text></g>
 
-  <!-- ============ B: panel back ============ -->
-  <text x="40" y="465" class="ttl">B  Panel, back side (screen facing down)</text>
-  <rect x="80" y="485" width="520" height="190" fill="#e9e9e9" stroke="#333" stroke-width="2"/>
+  <!-- ============ B: lid bottom edge ============ -->
+  <text x="40" y="465" class="ttl">B  Lid, bottom area (seen from the front)</text>
+  <rect x="80" y="485" width="520" height="190" fill="#dfe6ec" stroke="#333" stroke-width="2"/>
+  <text x="340" y="540" class="note" text-anchor="middle">old hinge screw holes + where the cables come out</text>
   <circle cx="80" cy="675" r="6" fill="#222"/>
-  <text x="92" y="700" class="lbl">corner ● (measure from here)</text>
-  <rect x="130" y="510" width="200" height="52" fill="#fff8c4" stroke="#999"/>
-  <text x="230" y="533" class="lbl" text-anchor="middle">label: write down the</text>
-  <text x="230" y="550" class="lbl" text-anchor="middle">part number (P/N)</text>
-  <g class="b"><circle cx="350" cy="536" r="13"/><text x="350" y="536">P</text></g>
-  <!-- connector + flex -->
-  <rect x="400" y="630" width="70" height="30" fill="#9a9a9a" stroke="#333"/>
-  <rect x="408" y="660" width="54" height="50" fill="#e0a64a" stroke="#333"/>
-  <text x="480" y="690" class="lbl">eDP / touch flex</text>
-  <!-- 8 position -->
-  <line x1="80" y1="680" x2="80" y2="745" class="ext"/><line x1="408" y1="712" x2="408" y2="745" class="ext"/>
-  <line x1="80" y1="740" x2="408" y2="740" class="dim"/>
-  <g class="b"><circle cx="244" cy="740" r="13"/><text x="244" y="740">8</text></g>
-  <!-- 9 width -->
-  <line x1="462" y1="712" x2="462" y2="745" class="ext"/>
-  <line x1="408" y1="740" x2="462" y2="740" class="dim"/>
-  <g class="b"><circle cx="490" cy="740" r="13"/><text x="490" y="740">9</text></g>
-  <text x="520" y="745" class="lbl">(+ which edge it leaves from)</text>
+  <text x="40" y="700" class="lbl">lid corner ● (bottom-left, front view)</text>
+  <g fill="#fff" stroke="#333" stroke-width="2"><circle cx="130" cy="645" r="6"/><circle cx="160" cy="645" r="6"/><circle cx="520" cy="645" r="6"/><circle cx="550" cy="645" r="6"/></g>
+  <!-- 8 hole x -->
+  <line x1="80" y1="625" x2="124" y2="625" class="dim"/>
+  <g class="b"><circle cx="102" cy="608" r="13"/><text x="102" y="608">8</text></g>
+  <!-- 9 hole y -->
+  <line x1="130" y1="651" x2="130" y2="675" class="dim"/>
+  <g class="b"><circle cx="110" cy="663" r="11"/><text x="110" y="663">9</text></g>
+  <text x="180" y="630" class="lbl">every hole: x (8) + y (9) + diameter</text>
+  <!-- cable bundle -->
+  <rect x="300" y="675" width="90" height="40" fill="#e0a64a" stroke="#333"/>
+  <text x="400" y="700" class="lbl">cable bundle (eDP, touch,</text>
+  <text x="400" y="716" class="lbl">webcam, Wi-Fi)</text>
+  <line x1="80" y1="682" x2="80" y2="745" class="ext"/><line x1="300" y1="717" x2="300" y2="745" class="ext"/><line x1="390" y1="717" x2="390" y2="745" class="ext"/>
+  <line x1="80" y1="740" x2="300" y2="740" class="dim"/>
+  <line x1="300" y1="740" x2="390" y2="740" class="dim"/>
+  <g class="b"><circle cx="190" cy="740" r="13"/><text x="190" y="740">10</text></g>
+  <text x="400" y="745" class="lbl">start x + width</text>
 
-  <!-- ============ C: panel edge ============ -->
-  <text x="40" y="800" class="ttl">C  Panel, edge view</text>
+  <!-- ============ C: lid edge ============ -->
+  <text x="40" y="800" class="ttl">C  Lid, edge view</text>
   <text x="80" y="828" class="lbl">front (glass) ↑</text>
-  <rect x="80" y="840" width="520" height="14" fill="#a9cbe8" stroke="#333" stroke-width="2"/>
-  <rect x="400" y="854" width="70" height="14" fill="#9a9a9a" stroke="#333"/>
-  <text x="400" y="890" class="lbl">tallest bump on the back (connector, tape, tab)</text>
+  <rect x="80" y="840" width="520" height="18" rx="4" fill="#a9cbe8" stroke="#333" stroke-width="2"/>
+  <text x="80" y="885" class="lbl">thickest point, glass to back cover (lid closed flat on a table)</text>
   <!-- 7 thickness -->
-  <line x1="602" y1="840" x2="640" y2="840" class="ext"/><line x1="602" y1="854" x2="640" y2="854" class="ext"/>
-  <line x1="630" y1="840" x2="630" y2="854" class="dim"/>
-  <g class="b"><circle cx="658" cy="847" r="13"/><text x="658" y="847">7</text></g>
-  <!-- 10 bump -->
-  <line x1="472" y1="854" x2="505" y2="854" class="ext"/><line x1="472" y1="868" x2="505" y2="868" class="ext"/>
-  <line x1="498" y1="854" x2="498" y2="868" class="dim"/>
-  <g class="b"><circle cx="525" cy="861" r="13"/><text x="525" y="861">10</text></g>
+  <line x1="602" y1="840" x2="640" y2="840" class="ext"/><line x1="602" y1="858" x2="640" y2="858" class="ext"/>
+  <line x1="630" y1="840" x2="630" y2="858" class="dim"/>
+  <g class="b"><circle cx="658" cy="849" r="13"/><text x="658" y="849">7</text></g>
 
   <!-- ============ D: board top view ============ -->
   <text x="720" y="45" class="ttl">D  Mainboard, heatsink side up</text>

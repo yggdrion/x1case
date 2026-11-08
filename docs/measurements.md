@@ -4,17 +4,16 @@ Numbers match [measure.png](measure.png). All values in mm. Fill in the value co
 
 | # | What | Parameter | Value |
 |---|---|---|---|
-| P | Panel part number (label on the back) | — | |
-| 1 | Panel glass width | `panel_w` | |
-| 2 | Panel glass height | `panel_h` | |
-| 3 | Left border, glass edge to first lit pixel | `active_off[0]` | |
-| 4 | Right border | `active_w` (= 1 − 3 − 4) | |
-| 5 | Top border | `active_h` (= 2 − 5 − 6) | |
-| 6 | Bottom border | `active_off[1]` | |
-| 7 | Panel thickness at the edge, touch layer included | `panel_t` | |
-| 8 | Flex cable: distance from corner ● (back view) | `edp_pos` | |
-| 9 | Flex cable width, plus which edge it leaves from | `edp_cut` | |
-| 10 | Tallest bump on the panel back | — | |
+| 1 | Lid outline width | `lid_w` | |
+| 2 | Lid outline height (hinges removed) | `lid_h` | |
+| R | Lid corner radius, seen from the front | `lid_r` | |
+| 3 | Left: lid edge to first lit pixel | `bezel[0]` | |
+| 4 | Right: lid edge to first lit pixel | `bezel[1]` | |
+| 5 | Top: lid edge to first lit pixel | `bezel[2]` | |
+| 6 | Bottom: lid edge to first lit pixel | `bezel[3]` | |
+| 7 | Lid thickness at its thickest point | `lid_t` | |
+| 8 / 9 | Every old hinge screw hole: x / y from the lid corner, plus diameter | `lid_anchors` | |
+| 10 | Cable bundle exit at the bottom edge: start x + width | `cable_exit` | |
 | 11 | Board width | `board_w` | |
 | 12 | Board height | `board_h` | |
 | 13 / 14 | Every screw hole H1, H2…: x / y from 0,0, plus hole diameter | `board_holes` | |
