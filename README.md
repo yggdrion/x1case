@@ -1,6 +1,6 @@
 # x1case
 
-A 3D-printable all-in-one case for a **Lenovo ThinkPad X1 Extreme Gen 1** (same chassis as the P1 Gen 1). The 4K touch panel sits at the front, and the mainboard sits behind it. The back shell carries a 120 mm assist fan controlled by an ESP32 and a VESA 100 mount. The keyboard is removed and replaced by a wireless one. The machine runs on AC only, with no battery.
+A 3D-printable all-in-one case for a **Lenovo ThinkPad X1 Extreme Gen 1** (same chassis as the P1 Gen 1). The original display lid (4K touch panel, bezel and back cover) stays intact; only the laptop base is removed. A printed clamp wraps the lid, and the mainboard sits behind it. The back shell carries a 120 mm assist fan controlled by an ESP32 and a VESA 100 mount. The keyboard is removed and replaced by a wireless one. The machine runs on AC only, with no battery.
 
 The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.com/yggdrion/wooting-waveshare): parametric OpenSCAD, dovetailed pieces glued together, and seams hidden in V-grooves.
 
@@ -10,18 +10,19 @@ The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.
 
 | Layer | Part | Notes |
 |---|---|---|
-| Bezel lip + panel pocket | `frame_*` | 3 pieces, printed front face down. M3 heat-set inserts in the 7 mm border |
-| Backer plate | `backer_*` | 3 pieces. Holds the panel flat and carries the board standoffs (M2 inserts) |
-| Air gap, board + stock heatsink/blowers | — | Board top side faces the panel, heatsink side faces the back |
+| Front clamp ring | `frame_*` | 3 pieces, printed front face down. A 3 mm lip over the lid's front edge, a 4.5 mm wall (7.5 mm at the bottom, with the cable channel) and pilot holes for the shell screws |
+| Display lid | — | Original, untouched apart from the removed hinges |
+| Board tray | `tray_*` | 3 pieces. Rests on the lid back, screwed into the old hinge holes. Carries the board standoffs (M2 inserts) |
+| Air gap, board + stock heatsink/blowers | — | Board top side faces the lid, heatsink side faces the back |
 | Back shell | `shell_*` | 3 pieces, printed back face down. 120 mm fan grille, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, DC jack, top/bottom vents. No board port cutouts: only DC-in is used, through an internal cable |
 
-The shell's front rim clamps the backer, and the backer clamps the panel against the lip. Shell screws (M3 × 12) go in from the back through counterbored bosses into the frame inserts.
+The shell's front rim presses on the lid's back edge, so the lid is clamped between the rim and the frame lip around its full outline. Shell screws (M2 × 12 self-tapping, plastite style) go in from the back through counterbored bosses into pilot holes in the frame wall. The cable bundle leaves the lid's bottom edge at the old hinge gap, runs through a channel in the bottom wall and enters the shell through a gap in the rim.
 
 ## Split
 
-Seams sit at `seams = [133, 263]`, giving pieces of about 133 / 130 / 102 × 231 mm on a 256 mm bed. The left piece holds the fan, the middle piece holds the VESA pad, and the right piece holds the electronics bay. Mirrored fake grooves keep the pattern symmetric. The dovetails slide together along Z (front to back), and the glue line sits in a groove. The file prints a `WARNING` echo when a piece does not fit the bed or a seam cuts through the fan or VESA pad.
+Seams sit at `seams = [136, 268]`, giving pieces of about 136 / 132 / 103 × 249 mm on a 256 mm bed. The height is tight: the clamp walls are thin so a ~236 mm lid still fits. The left piece holds the fan, the middle piece holds the VESA pad, and the right piece holds the electronics bay. Mirrored fake grooves keep the pattern symmetric. The dovetails slide together along Z (front to back), and the glue line sits in a groove. The file prints a `WARNING` echo when a piece does not fit the bed or a seam cuts through the fan, VESA pad or cable channel.
 
-`frame_m` exports as two separate strips (top and bottom bezel), because the window spans the full middle piece. Glue both strips to the end pieces in one go, so the dovetails keep them aligned.
+`frame_m` exports as two separate strips (top and bottom), because the window spans the full middle piece. Glue both strips to the end pieces in one go, so the dovetails keep them aligned.
 
 ![Back](images/assembly_back.png)
 ![Exploded](images/inside.png)
@@ -41,9 +42,9 @@ Seams sit at `seams = [133, 263]`, giving pieces of about 133 / 130 / 102 × 231
 
 See [docs/measure.png](docs/measure.png) (numbered drawing) and [docs/measurements.md](docs/measurements.md) (fill-in list).
 
-1. Panel outline, thickness, active area and offset, and eDP/touch connector position (`panel_*`, `active_*`, `edp_*`)
+1. Lid outline, corner radius, thickness and bezel widths (`lid_*`, `bezel`), old hinge holes (`lid_anchors`) and cable exit (`cable_exit`)
 2. Board outline, mounting holes, heatsink footprint and height, tallest parts (`board_*`, `heatsink_*`, `comp_h`)
-3. eDP cable length, which limits how far `board_pos` can sit from the panel connector
+3. eDP cable length, which limits how far `board_pos` can sit from the cable exit
 4. DC-in position and plug length (`dc_in_*`, `dc_plug_len`). The render warns when the plug doesn't fit between the board and the side wall
 
 ## Render
@@ -54,4 +55,4 @@ Requires OpenSCAD 2021.01+.
 openscad -o stl/shell_m.stl -D 'part="shell_m"' x1case.scad
 ```
 
-Parts: `frame_l|m|r`, `backer_l|m|r`, `shell_l|m|r`, plus `assembly` (with `explode` and `show_ghosts`).
+Parts: `frame_l|m|r`, `tray_l|m|r`, `shell_l|m|r`, plus `assembly` (with `explode` and `show_ghosts`).

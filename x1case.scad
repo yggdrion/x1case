@@ -1,6 +1,7 @@
 // x1case.scad: all-in-one case for a Lenovo ThinkPad X1 Extreme Gen 1.
-// The 4K touch panel sits at the front. The mainboard sits behind it on a backer plate.
-// A 120 mm assist fan (ESP32-controlled) and a VESA 100 mount go in the back shell.
+// The original display lid stays intact (panel, bezel, back cover); only the laptop base goes.
+// A printed clamp wraps the lid's edges. A tray on the lid's back carries the mainboard, and the
+// back shell carries a 120 mm assist fan (ESP32-controlled) and a VESA 100 mount.
 //
 // Coordinates: X = width (left to right, seen from the front), Y = height (bottom to top),
 // Z = depth (z = 0 is the front face, +Z goes toward the back).
@@ -9,35 +10,43 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_l, frame_m, frame_r, backer_l, backer_m, backer_r, shell_l, shell_m, shell_r]
+part = "assembly"; // [assembly, frame_l, frame_m, frame_r, tray_l, tray_m, tray_r, shell_l, shell_m, shell_r]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
-bed_margin = 4;     // keep-out at the bed edge
+bed_margin = 3;     // keep-out at the bed edge
 
-/* [Panel: PLACEHOLDERS, measure the 4K touch panel] */
-panel_w = 350.7;    // PLACEHOLDER glass outline width
-panel_h = 216.9;    // PLACEHOLDER glass outline height
-panel_t = 3.5;      // PLACEHOLDER thickness incl. touch layer
-active_w = 344.2;   // PLACEHOLDER active area width
-active_h = 193.6;   // PLACEHOLDER active area height
-active_off = [3.2, 10.0]; // PLACEHOLDER active area offset from the panel's bottom-left corner
-win_margin = 0.5;   // window overlap past the active area
-fit = 0.3;          // panel clearance per side
+/* [Display lid: PLACEHOLDERS, measure with the hinges removed] */
+lid_w = 361.8;      // PLACEHOLDER outline width
+lid_h = 236;        // PLACEHOLDER outline height
+lid_t = 6;          // PLACEHOLDER thickness, glass to back cover
+lid_r = 6;          // PLACEHOLDER corner radius (seen from the front)
+bezel = [7, 7, 10, 22]; // PLACEHOLDER lid edge to first lit pixel: [left, right, top, bottom]
+lip_w = 3;          // how far the clamp lip reaches over the lid's front edge
+fit = 0.3;          // lid clearance per side
+// Old hinge screw holes in the lid, used to anchor the board tray.
+// [x, y] from the lid's bottom-left corner, seen from the FRONT.
+lid_anchors = [[20, 8], [35, 8], [326.8, 8], [341.8, 8]]; // PLACEHOLDER
+anchor_clear_d = 2.4;     // M2 clearance in the tray
+// Cable bundle (eDP, touch, webcam, Wi-Fi) leaving the lid's bottom edge at the old hinge gap
+cable_exit = [150, 80];   // PLACEHOLDER [start x from the lid's left edge, width]
+cable_d = 4.5;            // channel depth below the lid edge, inside the bottom clamp wall
 
 /* [Case] */
-border = 7;         // solid frame border around the panel (holds the M3 inserts)
-lip_t = 2;          // front bezel lip thickness
-backer_t = 2;       // backer plate behind the panel
-gap = 5;            // air gap between backer and board (= board standoff height)
+clamp_wall = 4.5;         // clamp wall left, right and top (thin so the height fits the bed)
+clamp_wall_bottom = 7.5;  // bottom clamp wall, holds the cable channel
+lip_t = 2;          // front lip thickness
+tray_t = 2;         // board tray on the lid back
+gap = 5;            // air gap between tray and board (= board standoff height)
 shell_wall = 3;     // back shell side walls
 back_t = 2.5;       // back shell rear plate
-rim_t = 3;          // shell front rim that clamps the backer
-rim_over = 2;       // how far the rim reaches past the frame border onto the backer
+rim_t = 3;          // shell front rim that clamps the lid's back edge
+rim_over = 2;       // how far the rim reaches over the lid's back edge
+tray_inset = 0.5;   // tray clearance inside the rim
 tol = 0.2;          // dovetail glue gap (total)
 
-/* [Split: seams must avoid the fan and VESA bosses] */
-seams = [133, 263];       // real seams (X positions), glued dovetails
+/* [Split: seams must avoid the fan, VESA bosses and cable channel] */
+seams = [136, 268];       // real seams (X positions), glued dovetails
 fake_grooves = true;      // mirrored decorative grooves
 groove_w = 1.2;           // V-groove width at the surface
 
@@ -45,7 +54,7 @@ groove_w = 1.2;           // V-groove width at the surface
 board_w = 280;            // PLACEHOLDER board outline width
 board_h = 100;            // PLACEHOLDER board outline height
 board_t = 1.2;
-board_top_gap = 15;       // board top edge to panel top edge
+board_top_gap = 15;       // board top edge to lid top edge
 // PLACEHOLDER mounting holes, relative to the board's bottom-left corner
 board_holes = [[5, 5], [275, 5], [5, 95], [275, 95], [140, 95]];
 heatsink_pos = [150, 30]; // PLACEHOLDER relative to the board origin
@@ -63,8 +72,6 @@ dc_plug_len = 35;         // straight plug + strain relief + cable bend
 // [side "L"/"R", y centre rel. board, z offset from the board's back face, w (along Y), h (along Z), name]
 ports = [];
 port_clear = 1;           // extra opening around each port
-edp_cut = [40, 15];       // PLACEHOLDER eDP/touch flex passage in the backer (w, h)
-edp_pos = [0, 25];        // PLACEHOLDER offset of its centre from the panel's bottom centre
 
 /* [Fan] */
 fan_size = 120;
@@ -83,15 +90,15 @@ vesa_boss_h = 7;          // inside the shell, from the back plate
 rib_t = 3;
 rib_h = 6;
 
-/* [Shell screws: M3 x 12 into heat-set inserts in the frame] */
+/* [Shell screws: M2 x 12 self-tapping (plastite) into the clamp wall] */
 screw_inset = 15;         // from each piece's edges
-side_screw_y_rel = [0.2]; // side-wall screws as a fraction of H (keep clear of ports)
-boss_d = 10;
-screw_floor = 8;          // material under the counterbore
-m3_clear = 3.4;
-m3_head = 6.5;
-m3_insert_d = 4.0;
-m3_insert_depth = 5.5;
+side_screw_y_rel = [0.2]; // side-wall screws as a fraction of H
+boss_d = 7;
+screw_floor = 6;          // material under the counterbore
+screw_clear = 2.4;
+screw_head = 4.4;
+screw_pilot_d = 1.8;      // pilot hole in the frame wall
+screw_pilot_depth = 6.5;
 
 /* [Electronics bay, right piece] */
 esp_size = [23.5, 18.5];  // ESP32-C3 SuperMini, USB-C toward the right wall
@@ -115,21 +122,20 @@ show_ghosts = true;
 $fn = 48;
 
 // ---------------------------------------------------------------- derived
-W = panel_w + 2 * (border + fit);
-H = panel_h + 2 * (border + fit);
-px0 = border + fit;                 // panel origin
-py0 = border + fit;
-z_backer = lip_t + panel_t;
-zb = z_backer + backer_t;           // frame back face = shell front face
-z_board = zb + gap;                 // board front face
+W = lid_w + 2 * (fit + clamp_wall);
+H = lid_h + 2 * fit + clamp_wall + clamp_wall_bottom;
+lx0 = clamp_wall + fit;             // lid origin (bottom-left, front view)
+ly0 = clamp_wall_bottom + fit;
+zb = lip_t + lid_t;                 // lid back = frame back face = shell front face
+z_tray = zb;
+z_board = zb + tray_t + gap;        // board front face
 z_board_back = z_board + board_t;
-inner_d = gap + board_t + max(heatsink_h, comp_h + fan_t + fan_clear);
+inner_d = tray_t + gap + board_t + max(heatsink_h, comp_h + fan_t + fan_clear);
 D = zb + inner_d + back_t;          // total depth
 z_in = D - back_t;                  // inside face of the back plate
 
-board_pos = [(W - board_w) / 2, H - py0 - board_top_gap - board_h];
-win = [px0 + active_off[0] - win_margin, py0 + active_off[1] - win_margin,
-       active_w + 2 * win_margin, active_h + 2 * win_margin];
+board_pos = [(W - board_w) / 2, ly0 + lid_h - board_top_gap - board_h];
+cable_x = [lx0 + cable_exit[0], lx0 + cable_exit[0] + cable_exit[1]]; // global X range
 
 bounds = concat([0], seams, [W]);
 fan_c = [shell_wall + 2 + fan_pos_x + fan_size / 2, H / 2];
@@ -138,18 +144,17 @@ groove_x = fake_grooves ? concat(seams, [for (s = seams) W - s]) : seams;
 
 screw_x = [for (i = [0 : len(bounds) - 2]) each [bounds[i] + screw_inset, bounds[i + 1] - screw_inset]];
 screw_pts = concat(
-  [for (x = screw_x) [x, border / 2]],
-  [for (x = screw_x) [x, H - border / 2]],
-  [for (f = side_screw_y_rel) [border / 2, H * f]],
-  [for (f = side_screw_y_rel) [W - border / 2, H * f]]);
+  [for (x = screw_x) if (x < cable_x[0] - boss_d || x > cable_x[1] + boss_d) [x, clamp_wall_bottom / 2]],
+  [for (x = screw_x) [x, H - clamp_wall / 2]],
+  [for (f = side_screw_y_rel) [clamp_wall / 2, H * f]],
+  [for (f = side_screw_y_rel) [W - clamp_wall / 2, H * f]]);
 
 // Dovetail tabs per part: [y, neck, head, length]
-frame_tabs = [[border / 2, 3, 5, 4], [H - border / 2, 3, 5, 4],
-              [(border + win[1]) / 2, 5, 8, 4], [(win[1] + win[3] + H - border) / 2, 5, 8, 4]];
-shell_tabs = [[4.5, 3, 5, 4], [H - 4.5, 3, 5, 4],
+frame_tabs = [[clamp_wall_bottom / 2, 2.5, 4, 3], [H - clamp_wall / 2, 2, 3.5, 3]];
+shell_tabs = [[clamp_wall_bottom / 2, 2.5, 4, 3], [H - clamp_wall / 2, 2, 3.5, 3],
               [H * 0.25, 6, 10, 5], [H * 0.5, 6, 10, 5], [H * 0.75, 6, 10, 5]];
-backer_tabs = [[py0 + panel_h * 0.2, 6, 10, 5], [py0 + panel_h * 0.5, 6, 10, 5],
-               [py0 + panel_h * 0.8, 6, 10, 5]];
+tray_tabs = [[ly0 + lid_h * 0.2, 6, 10, 5], [ly0 + lid_h * 0.5, 6, 10, 5],
+             [ly0 + lid_h * 0.8, 6, 10, 5]];
 
 // ---------------------------------------------------------------- checks
 function rects_overlap(a, b) = a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3];
@@ -169,6 +174,8 @@ for (s = seams) {
   if (s > fan_rect[0] - 3 && s < fan_rect[0] + fan_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the fan"));
   if (s > vesa_rect[0] - 3 && s < vesa_rect[0] + vesa_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the VESA pad"));
 }
+for (s = seams) if (s > cable_x[0] - 5 && s < cable_x[1] + 5) echo(str("WARNING: seam ", s, " cuts the cable channel"));
+if (min(bezel) <= lip_w) echo("WARNING: clamp lip covers lit pixels (lip_w >= a bezel value)");
 dc_room = dc_in_side == "L" ? board_pos[0] - shell_wall : W - shell_wall - board_pos[0] - board_w;
 if (dc_room < dc_plug_len) echo(str("WARNING: only ", dc_room, " mm between board DC-in and side wall, plug needs ", dc_plug_len, " (use an angled plug or shrink board_w/move the board)"));
 
@@ -212,26 +219,31 @@ module piece_mask(i, tabs) {
 
 module split(i, tabs) intersection() { children(); piece_mask(i, tabs); }
 
-// ---------------------------------------------------------------- frame (front bezel + panel pocket)
+// 2D lid outline, grown by g
+module lid2d(g = 0) translate([lx0 + lid_w / 2, ly0 + lid_h / 2]) rrect(lid_w + 2 * g, lid_h + 2 * g, lid_r + g);
+
+// ---------------------------------------------------------------- frame (front clamp ring)
 module frame_full() {
   difference() {
     cube([W, H, zb]);
-    translate([border, border, lip_t]) cube([W - 2 * border, H - 2 * border, zb]);
-    translate([win[0], win[1], -1]) cube([win[2], win[3], lip_t + 2]);
-    for (p = screw_pts) translate([p[0], p[1], zb - m3_insert_depth]) cylinder(d = m3_insert_d, h = m3_insert_depth + 1);
+    translate([0, 0, lip_t]) linear_extrude(zb) lid2d(fit);
+    translate([0, 0, -1]) linear_extrude(lip_t + 2) lid2d(-lip_w);
+    // cable channel below the lid's bottom edge
+    translate([cable_x[0], ly0 - fit - cable_d, lip_t]) cube([cable_exit[1], cable_d + fit + 1, zb]);
+    for (p = screw_pts) translate([p[0], p[1], zb - screw_pilot_depth]) cylinder(d = screw_pilot_d, h = screw_pilot_depth + 1);
     grooves();
   }
 }
 
-// ---------------------------------------------------------------- backer (panel support, board standoffs)
-module backer_full() {
+// ---------------------------------------------------------------- tray (on the lid back, board standoffs)
+module tray_full() {
   difference() {
     union() {
-      translate([px0, py0, z_backer]) cube([panel_w, panel_h, backer_t]);
-      for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], zb - 0.01]) cylinder(d = 6, h = gap);
+      translate([0, 0, z_tray]) linear_extrude(tray_t) lid2d(-rim_over - tray_inset);
+      for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], z_tray + tray_t - 0.01]) cylinder(d = 6, h = gap);
     }
     for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], z_board - m2_insert_depth]) cylinder(d = m2_insert_d, h = m2_insert_depth + 1);
-    translate([W / 2 + edp_pos[0], py0 + edp_pos[1], z_backer + backer_t / 2]) cube([edp_cut[0], edp_cut[1], backer_t + 2], center = true);
+    for (a = lid_anchors) translate([lx0 + a[0], ly0 + a[1], z_tray - 1]) cylinder(d = anchor_clear_d, h = tray_t + 2);
   }
 }
 
@@ -260,10 +272,11 @@ module shell_full() {
         translate([0, 0, zb]) cube([W, H, D - zb]);
         translate([shell_wall, shell_wall, zb - 1]) cube([W - 2 * shell_wall, H - 2 * shell_wall, z_in - zb + 1]);
       }
-      // front rim, clamps the backer edge
+      // front rim, clamps the lid's back edge (cable channel left open)
       translate([0, 0, zb]) difference() {
         cube([W, H, rim_t]);
-        translate([border + rim_over, border + rim_over, -1]) cube([W - 2 * (border + rim_over), H - 2 * (border + rim_over), rim_t + 2]);
+        translate([0, 0, -1]) linear_extrude(rim_t + 2) lid2d(-rim_over);
+        translate([cable_x[0], ly0 - fit - cable_d, -1]) cube([cable_exit[1], cable_d + fit + rim_over + 1, rim_t + 2]);
       }
       for (p = screw_pts) translate([p[0], p[1], zb]) cylinder(d = boss_d, h = D - zb);
       // VESA bosses + ribs
@@ -276,8 +289,8 @@ module shell_full() {
     }
     // shell screws: clearance + counterbore from the back
     for (p = screw_pts) {
-      translate([p[0], p[1], zb - 1]) cylinder(d = m3_clear, h = D);
-      translate([p[0], p[1], zb + screw_floor]) cylinder(d = m3_head, h = D);
+      translate([p[0], p[1], zb - 1]) cylinder(d = screw_clear, h = D);
+      translate([p[0], p[1], zb + screw_floor]) cylinder(d = screw_head, h = D);
     }
     // VESA inserts from the back
     for (dx = [-1, 1], dy = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2, vesa_c[1] + dy * vesa / 2, D - vesa_insert_depth]) cylinder(d = vesa_insert_d, h = vesa_insert_depth + 1);
@@ -303,7 +316,7 @@ module shell_clipped() intersection() { shell_full(); cube([W, H, D]); }
 
 // ---------------------------------------------------------------- ghosts
 module ghosts() {
-  %translate([px0, py0, lip_t]) cube([panel_w, panel_h, panel_t]);
+  %translate([0, 0, lip_t]) linear_extrude(lid_t) lid2d();
   %translate([board_pos[0], board_pos[1], z_board]) cube([board_w, board_h, board_t]);
   %translate([hs_rect[0], hs_rect[1], z_board_back]) cube([hs_rect[2], hs_rect[3], heatsink_h]);
   %translate([fan_rect[0], fan_rect[1], z_in - fan_t]) cube([fan_size, fan_size, fan_t]);
@@ -317,14 +330,14 @@ names = ["l", "m", "r"];
 function idx(s) = [for (k = [0 : len(names) - 1]) if (names[k] == s) k][0];
 
 module print_frame(i) translate([-bounds[i], 0, 0]) split(i, frame_tabs) frame_full();
-module print_backer(i) translate([-bounds[i], 0, -z_backer]) split(i, backer_tabs) backer_full();
+module print_tray(i) translate([-bounds[i], 0, -z_tray]) split(i, tray_tabs) tray_full();
 module print_shell(i) translate([-bounds[i], 0, D]) mirror([0, 0, 1]) split(i, shell_tabs) shell_clipped();
 
 module assembly() {
   cols = ["SteelBlue", "LightSteelBlue", "SteelBlue"];
   for (i = [0 : len(bounds) - 2]) {
     color(cols[i]) split(i, frame_tabs) frame_full();
-    color("Silver") translate([0, 0, explode * 0.5]) split(i, backer_tabs) backer_full();
+    color("Silver") translate([0, 0, explode * 0.5]) split(i, tray_tabs) tray_full();
     color(cols[i], 0.9) translate([0, 0, explode]) split(i, shell_tabs) shell_clipped();
   }
   if (show_ghosts) ghosts();
@@ -335,7 +348,7 @@ else {
   kind = substr(part);
   i = idx(part[len(part) - 1]);
   if (kind == "frame") print_frame(i);
-  else if (kind == "backer") print_backer(i);
+  else if (kind == "tray") print_tray(i);
   else if (kind == "shell") print_shell(i);
 }
 
