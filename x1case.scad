@@ -21,7 +21,8 @@ lid_w = 361.8;      // PLACEHOLDER outline width
 lid_h = 236;        // PLACEHOLDER outline height
 lid_t = 6;          // PLACEHOLDER thickness, glass to back cover
 lid_r = 6;          // PLACEHOLDER corner radius (seen from the front)
-bezel = [7, 7, 10, 22]; // PLACEHOLDER lid edge to first lit pixel: [left, right, top, bottom]
+// Panel (from EDID on the 20MF000TGE): AUO B156ZAN03.2, 3840x2160, active area 344 x 193 mm.
+bezel = [8.8, 8.8, 10, 22]; // PLACEHOLDER lid edge to first lit pixel: [left, right, top, bottom]; L/R = (lid_w - 344.2) / 2
 lip_w = 3;          // how far the clamp lip reaches over the lid's front edge
 fit = 0.3;          // lid clearance per side
 // Old hinge screw holes in the lid, used to anchor the board tray.
