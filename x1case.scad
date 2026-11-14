@@ -38,7 +38,7 @@ fit = 0.3;          // lid clearance per side
 lid_anchors = [[20, 8], [35, 8], [326.8, 8], [341.8, 8]]; // PLACEHOLDER
 anchor_clear_d = 2.4;     // M2 clearance in the tray
 // Cable bundle (eDP, touch, webcam, Wi-Fi) leaving the lid's bottom edge at the old hinge gap
-cable_exits = [[92.5, 15], [293.5, 15]]; // PLACEHOLDER [start x from the lid's left edge, width]: ~100 mm from the left, ~60 mm from the right
+cable_exits = [[92.5, 15], [293.5, 15]]; // [start x from the lid's left edge, width]: centred ~100 mm from the left, ~60 mm from the right (measured); round cables only, no ribbon
 cable_d = 4.5;            // channel depth below the lid edge, inside the bottom clamp wall
 
 /* [Case] */
