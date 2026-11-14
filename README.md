@@ -15,13 +15,13 @@ The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.
 | Stub hoods | `hood` | Print 2. Small caps glued on the front of the bottom lip over the stubs, which poke through holes in the lip |
 | Board tray | `tray_*` | 6 pieces. Rests on the lid back, screwed into the old hinge holes. Carries the board standoffs (M2 inserts) |
 | Air gap, board + stock heatsink/blowers | — | Board top side faces the lid, heatsink side faces the back |
-| Back shell | `shell_*` | 6 pieces, printed back face down. 120 mm fan grille, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, a sleeve for the stock DC-in jack in the right wall, top/bottom vents. No board port cutouts: only DC-in is used |
+| Back shell | `shell_*` | 6 pieces, printed back face down. 120 mm fan grille, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, a sleeve for the stock DC-in jack in the back plate, top/bottom vents. No board port cutouts: only DC-in is used |
 
 The shell's front rim presses on the lid's back edge, so the lid is clamped between the rim and the frame lip around its full outline. Shell screws (M2 × 12 self-tapping, plastite style) go in from the back through counterbored bosses into pilot holes in the frame wall. The cable bundle leaves the lid's bottom edge at the old hinge gap, runs through a channel in the bottom wall and enters the shell through a gap in the rim.
 
 ## Split
 
-Vertical seams sit at `seams = [158, 280]` (columns of about 158 / 122 / 91 mm). The case is taller than the 256 mm bed, so a horizontal seam at `hseam = 64` splits each column into a bottom (`b`, 64 mm) and a top (`t`) piece: 6 pieces per part. The horizontal seam sits below the VESA pad and between the ESP32 and buck cradles. The left piece holds the fan, the middle piece holds the VESA pad, and the right piece holds the electronics bay. Mirrored fake grooves keep the pattern symmetric. The dovetails slide together along Z (front to back), and the glue line sits in a groove. The file prints a `WARNING` echo when a piece does not fit the bed or a seam cuts through the fan, VESA pad, cable channel, a fin-stack exhaust or a cradle.
+Vertical seams sit at `seams = [158, 320]` (columns of about 158 / 162 / 51 mm). The case is taller than the 256 mm bed, so a horizontal seam at `hseam = 64` splits each column into a bottom (`b`, 64 mm) and a top (`t`) piece: 6 pieces per part. The horizontal seam sits below the VESA pad and between the ESP32 and buck cradles. The left piece holds the fan, the middle piece holds the VESA pad, and the right piece holds the electronics bay. Mirrored fake grooves keep the pattern symmetric. The dovetails slide together along Z (front to back), and the glue line sits in a groove. The file prints a `WARNING` echo when a piece does not fit the bed or a seam cuts through the fan, VESA pad, cable channel, a fin-stack exhaust or a cradle.
 
 `frame_mb` and `frame_mt` are the bottom and top strips of the middle frame, because the window spans the full middle column. Glue each column's bottom and top piece first, then the columns together, so the dovetails keep everything aligned.
 
@@ -32,7 +32,7 @@ Vertical seams sit at `seams = [158, 280]` (columns of about 158 / 122 / 91 mm).
 
 - The stock cooler stays: one blower at each end of the board, heatpipes between, fin stacks on the board's top edge. The fin stacks blow up into the top vents.
 - The 120 mm × 25 mm fan (`fan_t = 15` for a slim NF-A12x15) sits on top of one blower (`fan_blower`), pulls air in through the back grille and pushes it into that blower's intake. The depth budget stacks the fan on the heatsink.
-- The stock DC-in jack sits on its own cable, so it slides into a sleeve in the right wall and the original charger plugs straight in. Tap its two wires for the 12 V buck (fan) and the 5 V buck (ESP32).
+- The stock DC-in jack sits on a short cable next to the right fin stack. It points out through the back plate in a sleeve, so the original charger plugs in from behind; the brick stays outside the case because of its heat. Tap its two wires for the 12 V buck (fan) and the 5 V buck (ESP32).
 - The ESP32-C3 SuperMini runs standalone. DS18B20 sensors on the heatsink, VRM area and exhaust set a firmware fan curve: 25 kHz PWM, tach read back, 100 % if a sensor fails. Its USB-C port is reachable through the right wall.
 
 ## Machine setup
@@ -47,7 +47,7 @@ See [docs/measure.png](docs/measure.png) (numbered drawing) and [docs/measuremen
 1. Lid outline, corner radius, thickness (thickest point and at the edge) and bezel widths (`lid_*`, `bezel`), old hinge holes and their thread (`lid_anchors`), hinge stubs, and cable exit (`cable_exit`)
 2. Board outline, mounting holes, blower intakes and fin-stack exhausts, heatsink height, tallest parts (`board_*`, `blowers`, `fin_exhausts`, `heatsink_h`, `comp_h`)
 3. eDP cable length, which limits how far `board_pos` can sit from the cable exit
-4. DC-in jack body size and cable length (`dc_jack`)
+4. DC-in jack body size and position (`dc_jack`, `dc_jack_pos`)
 
 ## Test prints
 

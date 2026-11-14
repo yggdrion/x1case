@@ -55,7 +55,7 @@ tray_inset = 0.5;   // tray clearance inside the rim
 tol = 0.2;          // dovetail glue gap (total)
 
 /* [Split: seams must avoid the fan, VESA bosses and cable channel] */
-seams = [158, 280];      // real seams (X positions), glued dovetails
+seams = [158, 320];      // real seams (X positions), glued dovetails
 hseam = 64;              // horizontal seam (Y position): the case is taller than the bed
 fake_grooves = true;      // mirrored decorative grooves
 groove_w = 1.2;           // V-groove width at the surface
@@ -71,14 +71,15 @@ board_holes = [[28, 4], [41.5, 34], [109.5, 132], [245, 132], [175, 18], [242, 3
 // Blower intake centres [x, y] + intake diameter, relative to the board's bottom-left corner.
 blowers = [[56, 88, 41], [288, 101, 41]]; // measured; right y PLACEHOLDER (estimated from photo)
 // Fin-stack exhausts on the board's top edge: [start x, width]. They blow up into the top vents.
-fin_exhausts = [[30, 30], [295, 30]];    // PLACEHOLDER
-heatsink_h = 14;          // PLACEHOLDER tallest part on the back side (heatsink + blowers)
+fin_exhausts = [[35, 70], [250, 55]];    // PLACEHOLDER (estimated from photo)
+heatsink_h = 10;          // tallest part on the back side: blowers, ~10 mm (measured)
 comp_h = 5;               // PLACEHOLDER tallest other part on the back side (RAM, SSD)
 m2_insert_d = 3.2;        // M2 heat-set insert hole
 m2_insert_depth = 4;
-// Stock DC-in jack: sits on a cable that plugs into the board, so it mounts in the right wall.
-dc_jack = [10, 8, 20];    // PLACEHOLDER jack body [width (along Y), height (along Z), length (into the case)]
-dc_jack_y = 30;
+// Stock DC-in jack: on a short cable next to the right fin stack. It points out through the back plate,
+// so the charger (brick stays outside the case) plugs in from behind.
+dc_jack = [10, 8, 20];    // PLACEHOLDER jack body [width (along X), height (along Y), length (along Z)]
+dc_jack_pos = [325, 130]; // PLACEHOLDER jack centre from the board's bottom-left corner (estimated from photo)
 // Optional side-wall cutouts (none by default):
 // [side "L"/"R", y centre rel. board, z offset from the board's back face, w (along Y), h (along Z), name]
 ports = [];
@@ -142,10 +143,10 @@ z_board_back = z_board + board_t;
 inner_d = tray_t + gap + board_t + max(heatsink_h + fan_clear + fan_t, comp_h); // fan sits on top of a blower
 D = z_tray + inner_d + back_t;      // total depth
 z_in = D - back_t;                  // inside face of the back plate
-dc_jack_z = (zb + rim_t + z_in) / 2;
-dc_sleeve = shell_wall + dc_jack[2] * 0.6; // sleeve holds the front 60 % of the jack body
+dc_sleeve = back_t + dc_jack[2] * 0.6; // sleeve holds the rear 60 % of the jack body
 
 board_pos = [(W - board_w) / 2, ly0 + lid_h - board_top_gap - board_h];
+dc_c = board_pos + dc_jack_pos;     // DC jack centre, global X/Y
 cable_x = [for (c = cable_exits) [lx0 + c[0], lx0 + c[0] + c[1]]]; // global X ranges
 
 bounds = concat([0], seams, [W]);
@@ -329,8 +330,8 @@ module shell_full() {
       translate([esp_x, esp_y, z_in + 0.01]) cradle(esp_size, true);
       for (y = buck_y) translate([W - shell_wall - cradle_wall - buck_size[0] - 2, y, z_in + 0.01]) cradle(buck_size, false);
       // DC jack sleeve
-      translate([W - dc_sleeve, dc_jack_y - dc_jack[0] / 2 - fit - cradle_wall, dc_jack_z - dc_jack[1] / 2 - fit - cradle_wall])
-        cube([dc_sleeve, dc_jack[0] + 2 * (fit + cradle_wall), dc_jack[1] + 2 * (fit + cradle_wall)]);
+      translate([dc_c[0] - dc_jack[0] / 2 - fit - cradle_wall, dc_c[1] - dc_jack[1] / 2 - fit - cradle_wall, D - dc_sleeve])
+        cube([dc_jack[0] + 2 * (fit + cradle_wall), dc_jack[1] + 2 * (fit + cradle_wall), dc_sleeve]);
     }
     // shell screws: clearance + counterbore from the back
     for (p = screw_pts) {
@@ -353,7 +354,7 @@ module shell_full() {
     for (p = ports) port_cut(p);
     translate([W - shell_wall - 1, esp_y + esp_size[1] / 2, z_in - 3.2]) rotate([0, 90, 0]) linear_extrude(shell_wall + 2) rrect(4.5, 10, 1.5);
     // stock DC-in jack: slot through the wall + sleeve pocket, jack slides in from inside
-    translate([W - dc_sleeve - 1, dc_jack_y - dc_jack[0] / 2 - fit, dc_jack_z - dc_jack[1] / 2 - fit]) cube([dc_sleeve + 2, dc_jack[0] + 2 * fit, dc_jack[1] + 2 * fit]);
+    translate([dc_c[0] - dc_jack[0] / 2 - fit, dc_c[1] - dc_jack[1] / 2 - fit, D - dc_sleeve - 1]) cube([dc_jack[0] + 2 * fit, dc_jack[1] + 2 * fit, dc_sleeve + 2]);
     grooves();
   }
 }
@@ -367,7 +368,7 @@ module ghosts() {
   for (b = blowers) %translate([board_pos[0] + b[0], board_pos[1] + b[1], z_board_back]) cylinder(d = b[2] + 10, h = heatsink_h);
   %translate([fan_rect[0], fan_rect[1], z_in - fan_t]) cube([fan_size, fan_size, fan_t]);
   %translate([W - shell_wall - esp_size[0], esp_y, z_in - 1.6]) cube([esp_size[0], esp_size[1], 1.6]);
-  %translate([W - shell_wall - dc_jack[2], dc_jack_y - dc_jack[0] / 2, dc_jack_z - dc_jack[1] / 2]) cube([dc_jack[2], dc_jack[0], dc_jack[1]]);
+  %translate([dc_c[0] - dc_jack[0] / 2, dc_c[1] - dc_jack[1] / 2, z_in - dc_jack[2]]) cube(dc_jack);
 }
 
 // ---------------------------------------------------------------- parts
