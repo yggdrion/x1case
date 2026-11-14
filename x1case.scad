@@ -66,7 +66,7 @@ board_h = 138;            // board outline height (measured)
 board_t = 1.2;
 board_top_gap = 15;       // board top edge to lid top edge
 // PLACEHOLDER mounting holes, relative to the board's bottom-left corner
-board_holes = [[5, 5], [350, 5], [5, 133], [350, 133], [178, 133]]; // PLACEHOLDER
+board_holes = [[28, 4], [41.5, 34], [109.5, 132], [245, 132], [175, 18], [242, 3.5], [127, 3.5]]; // H1-H7, measured; M2 (silkscreen M2XL3.5)
 // Stock cooler: one blower at each end of the board, heatpipes between, fin stacks on the board's top edge.
 // Blower intake centres [x, y] + intake diameter, relative to the board's bottom-left corner.
 blowers = [[55, 75, 60], [300, 75, 60]]; // PLACEHOLDER

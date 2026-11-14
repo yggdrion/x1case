@@ -50,7 +50,13 @@ Board holes (21–23), one row per hole:
 
 | Hole | 21: x | 22: y | 23: diameter |
 |---|---|---|---|
-| H1 | | | |
+| H1 | 28 | 4 | M2 |
+| H2 | 41.5 | 34 | M2 |
+| H3 | 109.5 | 132 | M2 |
+| H4 | 245 | 132 | M2 |
+| H5 | 175 | 18 | M2 |
+| H6 | 242 | 3.5 | M2 |
+| H7 | 127 | 3.5 | M2 |
 
 Blowers (24–26) and fin-stack exhausts (27, 28). The edge with the fin stacks is drawn at the top:
 
