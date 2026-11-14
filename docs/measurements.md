@@ -42,7 +42,7 @@ Hinge stubs (13–15, 18). They stick out on the glass side and stay on (no scre
 | 19 | Board width | `board_w` | 355 |
 | 20 | Board height | `board_h` | 138 |
 | 29 | Board thickness | `board_t` | |
-| 30 | Blowers + heatpipes: height above the board | `heatsink_h` | |
+| 30 | Blowers + heatpipes: height above the board | `heatsink_h` | ~10 (others guessed, with room to spare) |
 | 31 | Tallest other part on the heatsink side (RAM, SSD) | `comp_h` | |
 | 32 | Tallest part on the screen side | `gap` | |
 
@@ -76,7 +76,7 @@ If the board isn't a plain rectangle, add a photo taken straight from above with
 | 33 | Jack body width (plug side) | `dc_jack[0]` | |
 | 34 | Jack body height | `dc_jack[1]` | |
 | 35 | Jack body length | `dc_jack[2]` | |
-| 36 | Cable length, jack to board connector | — | |
+| 36 | Cable length, jack to board connector | — | very short: the jack can't move, it points out the back |
 
 Add a photo of how the jack was held in the laptop (bracket, screw).
 
