@@ -14,13 +14,13 @@ The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.
 | Display lid | — | Original, untouched apart from the removed hinges |
 | Board tray | `tray_*` | 3 pieces. Rests on the lid back, screwed into the old hinge holes. Carries the board standoffs (M2 inserts) |
 | Air gap, board + stock heatsink/blowers | — | Board top side faces the lid, heatsink side faces the back |
-| Back shell | `shell_*` | 3 pieces, printed back face down. 120 mm fan grille, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, DC jack, top/bottom vents. No board port cutouts: only DC-in is used, through an internal cable |
+| Back shell | `shell_*` | 3 pieces, printed back face down. 120 mm fan grille, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, a sleeve for the stock DC-in jack in the right wall, top/bottom vents. No board port cutouts: only DC-in is used |
 
 The shell's front rim presses on the lid's back edge, so the lid is clamped between the rim and the frame lip around its full outline. Shell screws (M2 × 12 self-tapping, plastite style) go in from the back through counterbored bosses into pilot holes in the frame wall. The cable bundle leaves the lid's bottom edge at the old hinge gap, runs through a channel in the bottom wall and enters the shell through a gap in the rim.
 
 ## Split
 
-Seams sit at `seams = [136, 268]`, giving pieces of about 136 / 132 / 103 × 249 mm on a 256 mm bed. The height is tight: the clamp walls are thin so a ~236 mm lid still fits. The left piece holds the fan, the middle piece holds the VESA pad, and the right piece holds the electronics bay. Mirrored fake grooves keep the pattern symmetric. The dovetails slide together along Z (front to back), and the glue line sits in a groove. The file prints a `WARNING` echo when a piece does not fit the bed or a seam cuts through the fan, VESA pad or cable channel.
+Seams sit at `seams = [158, 280]`, giving pieces of about 158 / 122 / 91 × 249 mm on a 256 mm bed. The height is tight: the clamp walls are thin so a ~236 mm lid still fits. The left piece holds the fan, the middle piece holds the VESA pad, and the right piece holds the electronics bay. Mirrored fake grooves keep the pattern symmetric. The dovetails slide together along Z (front to back), and the glue line sits in a groove. The file prints a `WARNING` echo when a piece does not fit the bed or a seam cuts through the fan, VESA pad, cable channel or a fin-stack exhaust.
 
 `frame_m` exports as two separate strips (top and bottom), because the window spans the full middle piece. Glue both strips to the end pieces in one go, so the dovetails keep them aligned.
 
@@ -29,8 +29,9 @@ Seams sit at `seams = [136, 268]`, giving pieces of about 136 / 132 / 103 × 249
 
 ## Cooling and power
 
-- The stock heatpipe and blowers stay. The 120 mm × 25 mm fan (`fan_t = 15` for a slim NF-A12x15) pulls air from the bottom vents across the board and out the back. The top vents act as a chimney.
-- The charger plugs into a DC jack on the right wall. It feeds the board's DC-in, a 12 V buck for the fan and a 5 V buck for the ESP32.
+- The stock cooler stays: one blower at each end of the board, heatpipes between, fin stacks on the board's top edge. The fin stacks blow up into the top vents.
+- The 120 mm × 25 mm fan (`fan_t = 15` for a slim NF-A12x15) sits on top of one blower (`fan_blower`), pulls air in through the back grille and pushes it into that blower's intake. The depth budget stacks the fan on the heatsink.
+- The stock DC-in jack sits on its own cable, so it slides into a sleeve in the right wall and the original charger plugs straight in. Tap its two wires for the 12 V buck (fan) and the 5 V buck (ESP32).
 - The ESP32-C3 SuperMini runs standalone. DS18B20 sensors on the heatsink, VRM area and exhaust set a firmware fan curve: 25 kHz PWM, tach read back, 100 % if a sensor fails. Its USB-C port is reachable through the right wall.
 
 ## Machine setup
@@ -43,9 +44,9 @@ Seams sit at `seams = [136, 268]`, giving pieces of about 136 / 132 / 103 × 249
 See [docs/measure.png](docs/measure.png) (numbered drawing) and [docs/measurements.md](docs/measurements.md) (fill-in list).
 
 1. Lid outline, corner radius, thickness (thickest point and at the edge) and bezel widths (`lid_*`, `bezel`), old hinge holes and their thread (`lid_anchors`), hinge stubs, and cable exit (`cable_exit`)
-2. Board outline, mounting holes, heatsink footprint and height, tallest parts (`board_*`, `heatsink_*`, `comp_h`)
+2. Board outline, mounting holes, blower intakes and fin-stack exhausts, heatsink height, tallest parts (`board_*`, `blowers`, `fin_exhausts`, `heatsink_h`, `comp_h`)
 3. eDP cable length, which limits how far `board_pos` can sit from the cable exit
-4. DC-in position and plug length (`dc_in_*`, `dc_plug_len`). The render warns when the plug doesn't fit between the board and the side wall
+4. DC-in jack body size and cable length (`dc_jack`)
 
 ## Test prints
 
