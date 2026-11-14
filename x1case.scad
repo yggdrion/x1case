@@ -16,14 +16,14 @@ part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_r
 bed = 256;          // Bambu Lab P2S bed (mm)
 bed_margin = 3;     // keep-out at the bed edge
 
-/* [Display lid: PLACEHOLDERS, measure with the hinges removed] */
-lid_w = 361.8;      // PLACEHOLDER outline width
-lid_h = 236;        // PLACEHOLDER outline height
+/* [Display lid: measured with the hinges removed, PLACEHOLDER where marked] */
+lid_w = 361;        // outline width (measured)
+lid_h = 245;        // outline height, hinge stubs not included (measured)
 lid_t = 6;          // PLACEHOLDER thickness, glass to back cover, at the thickest point
 lid_t_edge = 6;     // PLACEHOLDER thickness 3 mm in from the outline; the clamp grips here
 lid_r = 6;          // PLACEHOLDER corner radius (seen from the front)
 // Panel (from EDID on the 20MF000TGE): AUO B156ZAN03.2, 3840x2160, active area 344 x 193 mm.
-bezel = [8.8, 8.8, 10, 22]; // PLACEHOLDER lid edge to first lit pixel: [left, right, top, bottom]; L/R = (lid_w - 344.2) / 2
+bezel = [8.8, 8, 14, 37]; // measured: lid edge to first lit pixel: [left, right, top, bottom]; 8.8 + 344.2 + 8 = lid_w, 14 + 193 + 37 = lid_h ±1
 lip_w = 3;          // how far the clamp lip reaches over the lid's front edge
 fit = 0.3;          // lid clearance per side
 // Old hinge screw holes in the lid, used to anchor the board tray.
