@@ -17,8 +17,8 @@ Order: lid first (1–18) unblocks the `test_corner` print. Board and cooler (19
 | 7 | Bezel bottom | `bezel[3]` | 37 |
 | 11 | Cable exit: start x from 0,0 | `cable_exits` | ~100 from the left edge, ~60 from the right edge (two exits) |
 | 12 | Cable exit: width | `cable_exits` | |
-| 16 | Thickness at the thickest point | `lid_t` | |
-| 17 | Thickness 3 mm in from the edge (left / right / top / bottom) | `lid_t_edge` | |
+| 16 | Thickness at the thickest point | `lid_t` | 6.7–7 (flat) |
+| 17 | Thickness 3 mm in from the edge (left / right / top / bottom) | `lid_t_edge` | 7 |
 
 Old hinge screw holes (8–10), one row per hole:
 
@@ -39,8 +39,8 @@ Hinge stubs (13–15, 18). They stick out on the glass side and stay on (no scre
 
 | # | What | Parameter | Value |
 |---|---|---|---|
-| 19 | Board width | `board_w` | |
-| 20 | Board height | `board_h` | |
+| 19 | Board width | `board_w` | 355 |
+| 20 | Board height | `board_h` | 138 |
 | 29 | Board thickness | `board_t` | |
 | 30 | Blowers + heatpipes: height above the board | `heatsink_h` | |
 | 31 | Tallest other part on the heatsink side (RAM, SSD) | `comp_h` | |
