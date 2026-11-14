@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_l, frame_m, frame_r, tray_l, tray_m, tray_r, shell_l, shell_m, shell_r]
+part = "assembly"; // [assembly, frame_l, frame_m, frame_r, tray_l, tray_m, tray_r, shell_l, shell_m, shell_r, test_corner, test_seam]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -19,7 +19,8 @@ bed_margin = 3;     // keep-out at the bed edge
 /* [Display lid: PLACEHOLDERS, measure with the hinges removed] */
 lid_w = 361.8;      // PLACEHOLDER outline width
 lid_h = 236;        // PLACEHOLDER outline height
-lid_t = 6;          // PLACEHOLDER thickness, glass to back cover
+lid_t = 6;          // PLACEHOLDER thickness, glass to back cover, at the thickest point
+lid_t_edge = 6;     // PLACEHOLDER thickness 3 mm in from the outline; the clamp grips here
 lid_r = 6;          // PLACEHOLDER corner radius (seen from the front)
 // Panel (from EDID on the 20MF000TGE): AUO B156ZAN03.2, 3840x2160, active area 344 x 193 mm.
 bezel = [8.8, 8.8, 10, 22]; // PLACEHOLDER lid edge to first lit pixel: [left, right, top, bottom]; L/R = (lid_w - 344.2) / 2
@@ -127,12 +128,12 @@ W = lid_w + 2 * (fit + clamp_wall);
 H = lid_h + 2 * fit + clamp_wall + clamp_wall_bottom;
 lx0 = clamp_wall + fit;             // lid origin (bottom-left, front view)
 ly0 = clamp_wall_bottom + fit;
-zb = lip_t + lid_t;                 // lid back = frame back face = shell front face
-z_tray = zb;
-z_board = zb + tray_t + gap;        // board front face
+zb = lip_t + lid_t_edge;            // lid back edge = frame back face = shell front face
+z_tray = lip_t + lid_t;             // tray rests on the lid back's thickest point
+z_board = z_tray + tray_t + gap;    // board front face
 z_board_back = z_board + board_t;
 inner_d = tray_t + gap + board_t + max(heatsink_h, comp_h + fan_t + fan_clear);
-D = zb + inner_d + back_t;          // total depth
+D = z_tray + inner_d + back_t;      // total depth
 z_in = D - back_t;                  // inside face of the back plate
 
 board_pos = [(W - board_w) / 2, ly0 + lid_h - board_top_gap - board_h];
@@ -344,7 +345,26 @@ module assembly() {
   if (show_ghosts) ghosts();
 }
 
+// ---------------------------------------------------------------- test prints
+// Small slices of the real parts, to check fit before printing full pieces.
+module test_cut(b) intersection() { children(); translate([b[0], b[1], -1]) cube([b[2], b[3], D + 2]); }
+
+// Bottom-left frame corner: lid fit, corner radius, lip over the bezel, pocket depth.
+module test_corner() test_cut([0, 0, 70, 50]) frame_full();
+
+// Frame + shell around the left seam, bottom wall: dovetails, groove, one shell screw.
+// Front row = frame halves, back row = shell halves (print orientation), 10 mm apart.
+module test_seam() {
+  b = [seams[0] - 20, 0, 40, 40];
+  for (i = [0, 1]) translate([-b[0] + i * 10, 0, 0]) {
+    test_cut(b) split(i, frame_tabs) frame_full();
+    translate([0, b[3] + 10, D]) mirror([0, 0, 1]) test_cut(b) split(i, shell_tabs) shell_clipped();
+  }
+}
+
 if (part == "assembly") assembly();
+else if (part == "test_corner") test_corner();
+else if (part == "test_seam") test_seam();
 else {
   kind = substr(part);
   i = idx(part[len(part) - 1]);
