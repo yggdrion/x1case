@@ -15,8 +15,8 @@ Order: lid first (1–18) unblocks the `test_corner` print. Board and cooler (19
 | 5 | Bezel right | `bezel[1]` | 8 |
 | 6 | Bezel top | `bezel[2]` | 14 |
 | 7 | Bezel bottom | `bezel[3]` | 37 |
-| 11 | Cable exit: start x from 0,0 | `cable_exit[0]` | |
-| 12 | Cable exit: width | `cable_exit[1]` | |
+| 11 | Cable exit: start x from 0,0 | `cable_exits` | ~100 from the left edge, ~60 from the right edge (two exits) |
+| 12 | Cable exit: width | `cable_exits` | |
 | 16 | Thickness at the thickest point | `lid_t` | |
 | 17 | Thickness 3 mm in from the edge (left / right / top / bottom) | `lid_t_edge` | |
 
@@ -24,14 +24,16 @@ Old hinge screw holes (8–10), one row per hole:
 
 | Hole | 8: x | 9: y | 10: diameter / thread |
 |---|---|---|---|
-| | | | |
+| none: the stubs have no screw | | | |
 
-Hinge stubs (13–15, 18). They stick out on the glass side. Remove them if they come off with their screw, no force, and write "removed":
+The bottom 14 mm of the glass side is an open strip (antennas, cables, stubs): `lip_w_bottom = 14` covers it.
+
+Hinge stubs (13–15, 18). They stick out on the glass side and stay on (no screw):
 
 | Stub | 13: start x | 14: width | 15: height up from the bottom edge | 18: sticks out past the glass |
 |---|---|---|---|---|
-| left | | | | |
-| right | | | | |
+| left | 44 | 6 | 12 | ? |
+| right | 44 from the right edge | 6 | 12 | ? |
 
 ## Board and cooler (D, E)
 
