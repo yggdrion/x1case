@@ -10,19 +10,19 @@ The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.
 
 | Layer | Part | Notes |
 |---|---|---|
-| Front clamp ring | `frame_*` | 3 pieces, printed front face down. A 3 mm lip over the lid's front edge, a 4.5 mm wall (7.5 mm at the bottom, with the cable channel) and pilot holes for the shell screws |
+| Front clamp ring | `frame_*` | 6 pieces, printed front face down. A 3 mm lip over the lid's front edge, a 4.5 mm wall (7.5 mm at the bottom, with the cable channel) and pilot holes for the shell screws |
 | Display lid | — | Original, untouched apart from the removed hinges |
-| Board tray | `tray_*` | 3 pieces. Rests on the lid back, screwed into the old hinge holes. Carries the board standoffs (M2 inserts) |
+| Board tray | `tray_*` | 6 pieces. Rests on the lid back, screwed into the old hinge holes. Carries the board standoffs (M2 inserts) |
 | Air gap, board + stock heatsink/blowers | — | Board top side faces the lid, heatsink side faces the back |
-| Back shell | `shell_*` | 3 pieces, printed back face down. 120 mm fan grille, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, a sleeve for the stock DC-in jack in the right wall, top/bottom vents. No board port cutouts: only DC-in is used |
+| Back shell | `shell_*` | 6 pieces, printed back face down. 120 mm fan grille, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, a sleeve for the stock DC-in jack in the right wall, top/bottom vents. No board port cutouts: only DC-in is used |
 
 The shell's front rim presses on the lid's back edge, so the lid is clamped between the rim and the frame lip around its full outline. Shell screws (M2 × 12 self-tapping, plastite style) go in from the back through counterbored bosses into pilot holes in the frame wall. The cable bundle leaves the lid's bottom edge at the old hinge gap, runs through a channel in the bottom wall and enters the shell through a gap in the rim.
 
 ## Split
 
-Seams sit at `seams = [158, 280]`, giving pieces of about 158 / 122 / 91 × 249 mm on a 256 mm bed. The height is tight: the clamp walls are thin so a ~236 mm lid still fits. The left piece holds the fan, the middle piece holds the VESA pad, and the right piece holds the electronics bay. Mirrored fake grooves keep the pattern symmetric. The dovetails slide together along Z (front to back), and the glue line sits in a groove. The file prints a `WARNING` echo when a piece does not fit the bed or a seam cuts through the fan, VESA pad, cable channel or a fin-stack exhaust.
+Vertical seams sit at `seams = [158, 280]` (columns of about 158 / 122 / 91 mm). The case is taller than the 256 mm bed, so a horizontal seam at `hseam = 64` splits each column into a bottom (`b`, 64 mm) and a top (`t`) piece: 6 pieces per part. The horizontal seam sits below the VESA pad and between the ESP32 and buck cradles. The left piece holds the fan, the middle piece holds the VESA pad, and the right piece holds the electronics bay. Mirrored fake grooves keep the pattern symmetric. The dovetails slide together along Z (front to back), and the glue line sits in a groove. The file prints a `WARNING` echo when a piece does not fit the bed or a seam cuts through the fan, VESA pad, cable channel, a fin-stack exhaust or a cradle.
 
-`frame_m` exports as two separate strips (top and bottom), because the window spans the full middle piece. Glue both strips to the end pieces in one go, so the dovetails keep them aligned.
+`frame_mb` and `frame_mt` are the bottom and top strips of the middle frame, because the window spans the full middle column. Glue each column's bottom and top piece first, then the columns together, so the dovetails keep everything aligned.
 
 ![Back](images/assembly_back.png)
 ![Exploded](images/inside.png)
@@ -64,7 +64,7 @@ Tune `fit`, `tol` and `screw_pilot_d` from the results.
 Requires OpenSCAD 2021.01+.
 
 ```bash
-openscad -o stl/shell_m.stl -D 'part="shell_m"' x1case.scad
+openscad -o stl/shell_mt.stl -D 'part="shell_mt"' x1case.scad
 ```
 
-Parts: `frame_l|m|r`, `tray_l|m|r`, `shell_l|m|r`, `test_corner`, `test_seam`, plus `assembly` (with `explode` and `show_ghosts`).
+Parts: `frame|tray|shell` + `_` + column `l|m|r` + row `b|t` (e.g. `shell_lb`), `test_corner`, `test_seam`, plus `assembly` (with `explode` and `show_ghosts`).

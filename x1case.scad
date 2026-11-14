@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_l, frame_m, frame_r, tray_l, tray_m, tray_r, shell_l, shell_m, shell_r, test_corner, test_seam]
+part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_rb, frame_rt, tray_lb, tray_lt, tray_mb, tray_mt, tray_rb, tray_rt, shell_lb, shell_lt, shell_mb, shell_mt, shell_rb, shell_rt, test_corner, test_seam]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -49,6 +49,7 @@ tol = 0.2;          // dovetail glue gap (total)
 
 /* [Split: seams must avoid the fan, VESA bosses and cable channel] */
 seams = [158, 280];      // real seams (X positions), glued dovetails
+hseam = 64;              // horizontal seam (Y position): the case is taller than the bed
 fake_grooves = true;      // mirrored decorative grooves
 groove_w = 1.2;           // V-groove width at the surface
 
@@ -107,7 +108,7 @@ screw_pilot_depth = 6.5;
 esp_size = [23.5, 18.5];  // ESP32-C3 SuperMini, USB-C toward the right wall
 esp_y = 40;
 buck_size = [22, 17];     // MP1584-style buck, x2 (12 V fan, 5 V ESP32)
-buck_y = [70, 95];
+buck_y = [72, 97];        // clear of the horizontal seam tabs
 cradle_wall = 1.6;
 cradle_h = 4;
 
@@ -155,9 +156,13 @@ screw_pts = concat(
 // Dovetail tabs per part: [y, neck, head, length]
 frame_tabs = [[clamp_wall_bottom / 2, 2.5, 4, 3], [H - clamp_wall / 2, 2, 3.5, 3]];
 shell_tabs = [[clamp_wall_bottom / 2, 2.5, 4, 3], [H - clamp_wall / 2, 2, 3.5, 3],
-              [H * 0.25, 6, 10, 5], [H * 0.5, 6, 10, 5], [H * 0.75, 6, 10, 5]];
-tray_tabs = [[ly0 + lid_h * 0.2, 6, 10, 5], [ly0 + lid_h * 0.5, 6, 10, 5],
+              [H * 0.12, 6, 10, 5], [H * 0.5, 6, 10, 5], [H * 0.75, 6, 10, 5]];
+tray_tabs = [[ly0 + lid_h * 0.12, 6, 10, 5], [ly0 + lid_h * 0.5, 6, 10, 5],
              [ly0 + lid_h * 0.8, 6, 10, 5]];
+// Horizontal seam tabs: [x, neck, head, length]. Frame: in the side walls. Shell + tray: two per column, in the plate.
+rows = [0, hseam, H];
+frame_htabs = [[clamp_wall / 2, 2, 3.5, 3], [W - clamp_wall / 2, 2, 3.5, 3]];
+plate_htabs = [for (i = [0 : len(bounds) - 2]) let(c = (bounds[i] + bounds[i + 1]) / 2) each [[c - 25, 6, 10, 5], [c + 25, 6, 10, 5]]];
 
 // ---------------------------------------------------------------- checks
 function rects_overlap(a, b) = a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3];
@@ -165,11 +170,16 @@ fan_rect = [fan_c[0] - fan_size / 2, fan_c[1] - fan_size / 2, fan_size, fan_size
 vesa_rect = [vesa_c[0] - vesa / 2 - vesa_boss_d / 2, vesa_c[1] - vesa / 2 - vesa_boss_d / 2, vesa + vesa_boss_d, vesa + vesa_boss_d];
 
 echo(str("Case outer W x H x D = ", W, " x ", H, " x ", D, " mm"));
-for (i = [0 : len(bounds) - 2]) {
+for (i = [0 : len(bounds) - 2], j = [0, 1]) {
   w = bounds[i + 1] - bounds[i];
-  if (w > bed - 2 * bed_margin || H > bed - 2 * bed_margin)
-    echo(str("WARNING: piece ", i, " (", w, " x ", H, ") does not fit the bed"));
+  h = rows[j + 1] - rows[j];
+  if (w > bed - 2 * bed_margin || h > bed - 2 * bed_margin)
+    echo(str("WARNING: piece ", i, "/", j, " (", w, " x ", h, ") does not fit the bed"));
 }
+if (hseam > fan_rect[1] - 3 && hseam < fan_rect[1] + fan_size + 3) echo("WARNING: horizontal seam cuts the fan");
+if (hseam > vesa_rect[1] - 3 && hseam < vesa_rect[1] + vesa_rect[3] + 3) echo("WARNING: horizontal seam cuts the VESA pad");
+if (hseam < esp_y + esp_size[1] + cradle_wall + 2 && hseam > esp_y - cradle_wall - 2) echo("WARNING: horizontal seam cuts the ESP32 cradle");
+for (y = buck_y) if (hseam + 6 > y - cradle_wall && hseam < y + buck_size[1] + cradle_wall) echo("WARNING: horizontal seam tabs hit a buck cradle");
 if (fan_rect[0] < shell_wall || fan_rect[1] < shell_wall || fan_rect[0] + fan_size > W - shell_wall || fan_rect[1] + fan_size > H - shell_wall)
   echo("WARNING: fan over the blower does not fit inside the shell walls");
 if (rects_overlap(fan_rect, vesa_rect)) echo("WARNING: fan overlaps the VESA bosses");
@@ -199,6 +209,9 @@ module grooves() {
     } else translate([x, H / 2, D]) rotate([0, 45, 0]) cube([s, H + 2, s], center = true);
     for (y = [0, H]) translate([x, y, D / 2]) rotate([0, 0, 45]) cube([s, s, D + 2], center = true);
   }
+  // horizontal seam: front, back and both side faces (no mirrored fake, it would cross the fan)
+  for (z = [0, D]) translate([W / 2, hseam, z]) rotate([45, 0, 0]) cube([W + 2, s, s], center = true);
+  for (x = [0, W]) translate([x, hseam, D / 2]) rotate([0, 0, 45]) cube([s, s, D + 2], center = true);
 }
 
 // 2D region left of seam i, including that seam's dovetail tabs
@@ -210,16 +223,30 @@ module seam_region(i, tabs, grow) {
   }
 }
 
-module piece_mask(i, tabs) {
-  n = len(seams);
-  translate([0, 0, -50]) linear_extrude(D + 100) difference() {
-    if (i < n) seam_region(i, tabs, -tol / 2);
-    else translate([-50, -50]) square([W + 100, H + 100]);
-    if (i > 0) seam_region(i - 1, tabs, tol / 2);
+// 2D region below the horizontal seam, including its dovetail tabs
+module row_region(htabs, grow) {
+  offset(delta = grow) union() {
+    translate([-50, -50]) square([W + 100, hseam + 50]);
+    for (t = htabs) translate([t[0], hseam])
+      polygon([[-t[1] / 2, -0.01], [-t[2] / 2, t[3]], [t[2] / 2, t[3]], [t[1] / 2, -0.01]]);
   }
 }
 
-module split(i, tabs) intersection() { children(); piece_mask(i, tabs); }
+// column i (left to right), row j (0 = bottom, 1 = top)
+module piece_mask(i, j, tabs, htabs) {
+  n = len(seams);
+  translate([0, 0, -50]) linear_extrude(D + 100) intersection() {
+    difference() {
+      if (i < n) seam_region(i, tabs, -tol / 2);
+      else translate([-50, -50]) square([W + 100, H + 100]);
+      if (i > 0) seam_region(i - 1, tabs, tol / 2);
+    }
+    if (j == 0) row_region(htabs, -tol / 2);
+    else difference() { translate([-50, -50]) square([W + 100, H + 100]); row_region(htabs, tol / 2); }
+  }
+}
+
+module split(i, j, tabs, htabs) intersection() { children(); piece_mask(i, j, tabs, htabs); }
 
 // 2D lid outline, grown by g
 module lid2d(g = 0) translate([lx0 + lid_w / 2, ly0 + lid_h / 2]) rrect(lid_w + 2 * g, lid_h + 2 * g, lid_r + g);
@@ -334,16 +361,16 @@ module ghosts() {
 names = ["l", "m", "r"];
 function idx(s) = [for (k = [0 : len(names) - 1]) if (names[k] == s) k][0];
 
-module print_frame(i) translate([-bounds[i], 0, 0]) split(i, frame_tabs) frame_full();
-module print_tray(i) translate([-bounds[i], 0, -z_tray]) split(i, tray_tabs) tray_full();
-module print_shell(i) translate([-bounds[i], 0, D]) mirror([0, 0, 1]) split(i, shell_tabs) shell_clipped();
+module print_frame(i, j) translate([-bounds[i], -rows[j], 0]) split(i, j, frame_tabs, frame_htabs) frame_full();
+module print_tray(i, j) translate([-bounds[i], -rows[j], -z_tray]) split(i, j, tray_tabs, plate_htabs) tray_full();
+module print_shell(i, j) translate([-bounds[i], -rows[j], D]) mirror([0, 0, 1]) split(i, j, shell_tabs, plate_htabs) shell_clipped();
 
 module assembly() {
   cols = ["SteelBlue", "LightSteelBlue", "SteelBlue"];
-  for (i = [0 : len(bounds) - 2]) {
-    color(cols[i]) split(i, frame_tabs) frame_full();
-    color("Silver") translate([0, 0, explode * 0.5]) split(i, tray_tabs) tray_full();
-    color(cols[i], 0.9) translate([0, 0, explode]) split(i, shell_tabs) shell_clipped();
+  for (i = [0 : len(bounds) - 2], j = [0, 1]) {
+    color(cols[i]) split(i, j, frame_tabs, frame_htabs) frame_full();
+    color("Silver") translate([0, 0, explode * 0.5]) split(i, j, tray_tabs, plate_htabs) tray_full();
+    color(cols[i], 0.9) translate([0, 0, explode]) split(i, j, shell_tabs, plate_htabs) shell_clipped();
   }
   if (show_ghosts) ghosts();
 }
@@ -360,8 +387,8 @@ module test_corner() test_cut([0, 0, 70, 50]) frame_full();
 module test_seam() {
   b = [seams[0] - 20, 0, 40, 40];
   for (i = [0, 1]) translate([-b[0] + i * 10, 0, 0]) {
-    test_cut(b) split(i, frame_tabs) frame_full();
-    translate([0, b[3] + 10, D]) mirror([0, 0, 1]) test_cut(b) split(i, shell_tabs) shell_clipped();
+    test_cut(b) split(i, 0, frame_tabs, frame_htabs) frame_full();
+    translate([0, b[3] + 10, D]) mirror([0, 0, 1]) test_cut(b) split(i, 0, shell_tabs, plate_htabs) shell_clipped();
   }
 }
 
@@ -370,10 +397,11 @@ else if (part == "test_corner") test_corner();
 else if (part == "test_seam") test_seam();
 else {
   kind = substr(part);
-  i = idx(part[len(part) - 1]);
-  if (kind == "frame") print_frame(i);
-  else if (kind == "tray") print_tray(i);
-  else if (kind == "shell") print_shell(i);
+  i = idx(part[len(part) - 2]);
+  j = part[len(part) - 1] == "t" ? 1 : 0;
+  if (kind == "frame") print_frame(i, j);
+  else if (kind == "tray") print_tray(i, j);
+  else if (kind == "shell") print_shell(i, j);
 }
 
 function substr(s) = let(p = search("_", s)[0]) chr([for (k = [0 : p - 1]) ord(s[k])]);
