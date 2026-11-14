@@ -24,14 +24,19 @@ lid_t_edge = 6;     // PLACEHOLDER thickness 3 mm in from the outline; the clamp
 lid_r = 6;          // PLACEHOLDER corner radius (seen from the front)
 // Panel (from EDID on the 20MF000TGE): AUO B156ZAN03.2, 3840x2160, active area 344 x 193 mm.
 bezel = [8.8, 8, 14, 37]; // measured: lid edge to first lit pixel: [left, right, top, bottom]; 8.8 + 344.2 + 8 = lid_w, 14 + 193 + 37 = lid_h ±1
-lip_w = 3;          // how far the clamp lip reaches over the lid's front edge
+lip_w = 3;          // how far the clamp lip reaches over the lid's front edge (left, right, top)
+lip_w_bottom = 14;  // bottom lip: covers the open strip with the antennas and cables along the hinge edge
+// Hinge stubs: fixed to the lid (no screw), stick out on the glass side inside the bottom strip.
+// [x from the lid's left edge, width, height up from the bottom edge]; the right one mirrors at 44 mm from the right edge.
+stubs = [[44, 6, 12], [361 - 44 - 6, 6, 12]];
+stub_out = 1;       // PLACEHOLDER how far a stub sticks out past the glass (it stands ~8 mm above the strip floor); pocket depth in the lip
 fit = 0.3;          // lid clearance per side
 // Old hinge screw holes in the lid, used to anchor the board tray.
 // [x, y] from the lid's bottom-left corner, seen from the FRONT.
 lid_anchors = [[20, 8], [35, 8], [326.8, 8], [341.8, 8]]; // PLACEHOLDER
 anchor_clear_d = 2.4;     // M2 clearance in the tray
 // Cable bundle (eDP, touch, webcam, Wi-Fi) leaving the lid's bottom edge at the old hinge gap
-cable_exit = [300, 40];   // PLACEHOLDER [start x from the lid's left edge, width]
+cable_exits = [[92.5, 15], [293.5, 15]]; // PLACEHOLDER [start x from the lid's left edge, width]: ~100 mm from the left, ~60 mm from the right
 cable_d = 4.5;            // channel depth below the lid edge, inside the bottom clamp wall
 
 /* [Case] */
@@ -139,7 +144,7 @@ dc_jack_z = (zb + rim_t + z_in) / 2;
 dc_sleeve = shell_wall + dc_jack[2] * 0.6; // sleeve holds the front 60 % of the jack body
 
 board_pos = [(W - board_w) / 2, ly0 + lid_h - board_top_gap - board_h];
-cable_x = [lx0 + cable_exit[0], lx0 + cable_exit[0] + cable_exit[1]]; // global X range
+cable_x = [for (c = cable_exits) [lx0 + c[0], lx0 + c[0] + c[1]]]; // global X ranges
 
 bounds = concat([0], seams, [W]);
 fan_c = [board_pos[0] + blowers[fan_blower][0], board_pos[1] + blowers[fan_blower][1]];
@@ -148,7 +153,7 @@ groove_x = fake_grooves ? concat(seams, [for (s = seams) W - s]) : seams;
 
 screw_x = [for (i = [0 : len(bounds) - 2]) each [bounds[i] + screw_inset, bounds[i + 1] - screw_inset]];
 screw_pts = concat(
-  [for (x = screw_x) if (x < cable_x[0] - boss_d || x > cable_x[1] + boss_d) [x, clamp_wall_bottom / 2]],
+  [for (x = screw_x) if (len([for (c = cable_x) if (x > c[0] - boss_d && x < c[1] + boss_d) 1]) == 0) [x, clamp_wall_bottom / 2]],
   [for (x = screw_x) [x, H - clamp_wall / 2]],
   [for (f = side_screw_y_rel) [clamp_wall / 2, H * f]],
   [for (f = side_screw_y_rel) [W - clamp_wall / 2, H * f]]);
@@ -187,9 +192,9 @@ for (s = seams) {
   if (s > fan_rect[0] - 3 && s < fan_rect[0] + fan_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the fan"));
   if (s > vesa_rect[0] - 3 && s < vesa_rect[0] + vesa_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the VESA pad"));
 }
-for (s = seams) if (s > cable_x[0] - 5 && s < cable_x[1] + 5) echo(str("WARNING: seam ", s, " cuts the cable channel"));
+for (s = seams, c = cable_x) if (s > c[0] - 5 && s < c[1] + 5) echo(str("WARNING: seam ", s, " cuts a cable channel"));
 for (s = seams, f = fin_exhausts) if (s > board_pos[0] + f[0] - 3 && s < board_pos[0] + f[0] + f[1] + 3) echo(str("WARNING: seam ", s, " blocks a fin-stack exhaust"));
-if (min(bezel) <= lip_w) echo("WARNING: clamp lip covers lit pixels (lip_w >= a bezel value)");
+if (min([bezel[0], bezel[1], bezel[2]]) <= lip_w || bezel[3] <= lip_w_bottom) echo("WARNING: clamp lip covers lit pixels (lip_w or lip_w_bottom >= a bezel value)");
 
 // ---------------------------------------------------------------- helpers
 module rrect(w, h, r) {
@@ -256,9 +261,12 @@ module frame_full() {
   difference() {
     cube([W, H, zb]);
     translate([0, 0, lip_t]) linear_extrude(zb) lid2d(fit);
-    translate([0, 0, -1]) linear_extrude(lip_t + 2) lid2d(-lip_w);
-    // cable channel below the lid's bottom edge
-    translate([cable_x[0], ly0 - fit - cable_d, lip_t]) cube([cable_exit[1], cable_d + fit + 1, zb]);
+    // window: lip_w on three sides, lip_w_bottom along the hinge edge
+    translate([lx0 + lid_w / 2, ly0 + (lip_w_bottom + lid_h - lip_w) / 2, -1]) linear_extrude(lip_t + 2)
+      rrect(lid_w - 2 * lip_w, lid_h - lip_w - lip_w_bottom, max(lid_r - lip_w, 1));
+    // hinge stub pockets in the back of the lip
+    for (t = stubs) translate([lx0 + t[0] - 1, ly0 - fit, lip_t - stub_out - 0.5]) cube([t[1] + 2, t[2] + fit + 1, stub_out + 1]);
+    for (c = cable_x) translate([c[0], ly0 - fit - cable_d, lip_t]) cube([c[1] - c[0], cable_d + fit + 1, zb]);
     for (p = screw_pts) translate([p[0], p[1], zb - screw_pilot_depth]) cylinder(d = screw_pilot_d, h = screw_pilot_depth + 1);
     grooves();
   }
@@ -305,7 +313,7 @@ module shell_full() {
       translate([0, 0, zb]) difference() {
         cube([W, H, rim_t]);
         translate([0, 0, -1]) linear_extrude(rim_t + 2) lid2d(-rim_over);
-        translate([cable_x[0], ly0 - fit - cable_d, -1]) cube([cable_exit[1], cable_d + fit + rim_over + 1, rim_t + 2]);
+        for (c = cable_x) translate([c[0], ly0 - fit - cable_d, -1]) cube([c[1] - c[0], cable_d + fit + rim_over + 1, rim_t + 2]);
       }
       for (p = screw_pts) translate([p[0], p[1], zb]) cylinder(d = boss_d, h = D - zb);
       // VESA bosses + ribs
