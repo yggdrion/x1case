@@ -32,8 +32,8 @@ Hinge stubs (13–15, 18). They stick out on the glass side and stay on (no scre
 
 | Stub | 13: start x | 14: width | 15: height up from the bottom edge | 18: sticks out past the glass |
 |---|---|---|---|---|
-| left | 44 | 6 | 12 | ? |
-| right | 44 from the right edge | 6 | 12 | ? |
+| left | 44 | 6 | 8 | 12 |
+| right | 44 from the right edge | 6 | 8 | 12 |
 
 ## Board and cooler (D, E)
 
