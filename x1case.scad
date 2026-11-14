@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_rb, frame_rt, tray_lb, tray_lt, tray_mb, tray_mt, tray_rb, tray_rt, shell_lb, shell_lt, shell_mb, shell_mt, shell_rb, shell_rt, test_corner, test_seam]
+part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_rb, frame_rt, tray_lb, tray_lt, tray_mb, tray_mt, tray_rb, tray_rt, shell_lb, shell_lt, shell_mb, shell_mt, shell_rb, shell_rt, hood, test_corner, test_seam]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -19,8 +19,8 @@ bed_margin = 3;     // keep-out at the bed edge
 /* [Display lid: measured with the hinges removed, PLACEHOLDER where marked] */
 lid_w = 361;        // outline width (measured)
 lid_h = 245;        // outline height, hinge stubs not included (measured)
-lid_t = 6;          // PLACEHOLDER thickness, glass to back cover, at the thickest point
-lid_t_edge = 6;     // PLACEHOLDER thickness 3 mm in from the outline; the clamp grips here
+lid_t = 7;          // thickness, glass to back cover, at the thickest point (measured: lid is flat, 6.7-7)
+lid_t_edge = 7;     // thickness 3 mm in from the outline; the clamp grips here (measured)
 lid_r = 6;          // PLACEHOLDER corner radius (seen from the front)
 // Panel (from EDID on the 20MF000TGE): AUO B156ZAN03.2, 3840x2160, active area 344 x 193 mm.
 bezel = [8.8, 8, 14, 37]; // measured: lid edge to first lit pixel: [left, right, top, bottom]; 8.8 + 344.2 + 8 = lid_w, 14 + 193 + 37 = lid_h ±1
@@ -28,8 +28,10 @@ lip_w = 3;          // how far the clamp lip reaches over the lid's front edge (
 lip_w_bottom = 14;  // bottom lip: covers the open strip with the antennas and cables along the hinge edge
 // Hinge stubs: fixed to the lid (no screw), stick out on the glass side inside the bottom strip.
 // [x from the lid's left edge, width, height up from the bottom edge]; the right one mirrors at 44 mm from the right edge.
-stubs = [[44, 6, 12], [361 - 44 - 6, 6, 12]];
-stub_out = 1;       // PLACEHOLDER how far a stub sticks out past the glass (it stands ~8 mm above the strip floor); pocket depth in the lip
+stubs = [[44, 6, 8], [361 - 44 - 6, 6, 8]];
+stub_out = 12;      // how far a stub sticks out past the glass (measured)
+stub_clear = 0.5;   // gap around a stub, per side
+hood_wall = 1.6;    // stub hood: printed separately, glued on the front over the hole in the lip
 fit = 0.3;          // lid clearance per side
 // Old hinge screw holes in the lid, used to anchor the board tray.
 // [x, y] from the lid's bottom-left corner, seen from the FRONT.
@@ -59,17 +61,17 @@ fake_grooves = true;      // mirrored decorative grooves
 groove_w = 1.2;           // V-groove width at the surface
 
 /* [Mainboard: PLACEHOLDERS] */
-board_w = 280;            // PLACEHOLDER board outline width
-board_h = 100;            // PLACEHOLDER board outline height
+board_w = 355;            // board outline width (measured)
+board_h = 138;            // board outline height (measured)
 board_t = 1.2;
 board_top_gap = 15;       // board top edge to lid top edge
 // PLACEHOLDER mounting holes, relative to the board's bottom-left corner
-board_holes = [[5, 5], [275, 5], [5, 95], [275, 95], [140, 95]];
+board_holes = [[5, 5], [350, 5], [5, 133], [350, 133], [178, 133]]; // PLACEHOLDER
 // Stock cooler: one blower at each end of the board, heatpipes between, fin stacks on the board's top edge.
 // Blower intake centres [x, y] + intake diameter, relative to the board's bottom-left corner.
-blowers = [[45, 50, 60], [235, 50, 60]]; // PLACEHOLDER
+blowers = [[55, 75, 60], [300, 75, 60]]; // PLACEHOLDER
 // Fin-stack exhausts on the board's top edge: [start x, width]. They blow up into the top vents.
-fin_exhausts = [[20, 25], [255, 25]];    // PLACEHOLDER
+fin_exhausts = [[30, 30], [295, 30]];    // PLACEHOLDER
 heatsink_h = 14;          // PLACEHOLDER tallest part on the back side (heatsink + blowers)
 comp_h = 5;               // PLACEHOLDER tallest other part on the back side (RAM, SSD)
 m2_insert_d = 3.2;        // M2 heat-set insert hole
@@ -147,7 +149,10 @@ board_pos = [(W - board_w) / 2, ly0 + lid_h - board_top_gap - board_h];
 cable_x = [for (c = cable_exits) [lx0 + c[0], lx0 + c[0] + c[1]]]; // global X ranges
 
 bounds = concat([0], seams, [W]);
-fan_c = [board_pos[0] + blowers[fan_blower][0], board_pos[1] + blowers[fan_blower][1]];
+// fan centred on its blower, pushed inward where the blower sits too close to a wall
+// ponytail: fan only partly covers the blower then; a duct would fix that if temps need it
+fan_lim = shell_wall + 2 + fan_size / 2;
+fan_c = [for (k = [0, 1]) let(b = board_pos[k] + blowers[fan_blower][k], hi = (k == 0 ? W : H) - fan_lim) min(max(b, fan_lim), hi)];
 vesa_c = [(seams[0] + seams[len(seams) - 1]) / 2, H / 2];
 groove_x = fake_grooves ? concat(seams, [for (s = seams) W - s]) : seams;
 
@@ -264,8 +269,8 @@ module frame_full() {
     // window: lip_w on three sides, lip_w_bottom along the hinge edge
     translate([lx0 + lid_w / 2, ly0 + (lip_w_bottom + lid_h - lip_w) / 2, -1]) linear_extrude(lip_t + 2)
       rrect(lid_w - 2 * lip_w, lid_h - lip_w - lip_w_bottom, max(lid_r - lip_w, 1));
-    // hinge stub pockets in the back of the lip
-    for (t = stubs) translate([lx0 + t[0] - 1, ly0 - fit, lip_t - stub_out - 0.5]) cube([t[1] + 2, t[2] + fit + 1, stub_out + 1]);
+    // hinge stubs poke through the lip; a glued-on hood covers each one
+    for (t = stubs) translate([lx0 + t[0] - stub_clear, ly0 - fit, -1]) cube([t[1] + 2 * stub_clear, t[2] + fit + stub_clear, lip_t + 2]);
     for (c = cable_x) translate([c[0], ly0 - fit - cable_d, lip_t]) cube([c[1] - c[0], cable_d + fit + 1, zb]);
     for (p = screw_pts) translate([p[0], p[1], zb - screw_pilot_depth]) cylinder(d = screw_pilot_d, h = screw_pilot_depth + 1);
     grooves();
@@ -380,6 +385,7 @@ module assembly() {
     color("Silver") translate([0, 0, explode * 0.5]) split(i, j, tray_tabs, plate_htabs) tray_full();
     color(cols[i], 0.9) translate([0, 0, explode]) split(i, j, shell_tabs, plate_htabs) shell_clipped();
   }
+  for (t = stubs) color(cols[0]) translate([lx0 + t[0] - stub_clear - hood_wall, ly0 - fit - hood_wall, 0]) mirror([0, 0, 1]) hood(t);
   if (show_ghosts) ghosts();
 }
 
@@ -400,7 +406,20 @@ module test_seam() {
   }
 }
 
+// ---------------------------------------------------------------- stub hood
+// Box over a hinge stub, open toward the frame; print open side down, glue on the front of the bottom lip.
+module hood(t) {
+  iw = t[1] + 2 * stub_clear;
+  ih = t[2] + fit + stub_clear;
+  d = stub_out - lip_t + stub_clear;
+  difference() {
+    cube([iw + 2 * hood_wall, ih + 2 * hood_wall, d + hood_wall]);
+    translate([hood_wall, hood_wall, -1]) cube([iw, ih, d + 1]);
+  }
+}
+
 if (part == "assembly") assembly();
+else if (part == "hood") hood(stubs[0]); // print 2
 else if (part == "test_corner") test_corner();
 else if (part == "test_seam") test_seam();
 else {
