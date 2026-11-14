@@ -42,10 +42,21 @@ Seams sit at `seams = [136, 268]`, giving pieces of about 136 / 132 / 103 × 249
 
 See [docs/measure.png](docs/measure.png) (numbered drawing) and [docs/measurements.md](docs/measurements.md) (fill-in list).
 
-1. Lid outline, corner radius, thickness and bezel widths (`lid_*`, `bezel`), old hinge holes (`lid_anchors`) and cable exit (`cable_exit`)
+1. Lid outline, corner radius, thickness (thickest point and at the edge) and bezel widths (`lid_*`, `bezel`), old hinge holes and their thread (`lid_anchors`), hinge stubs, and cable exit (`cable_exit`)
 2. Board outline, mounting holes, heatsink footprint and height, tallest parts (`board_*`, `heatsink_*`, `comp_h`)
 3. eDP cable length, which limits how far `board_pos` can sit from the cable exit
 4. DC-in position and plug length (`dc_in_*`, `dc_plug_len`). The render warns when the plug doesn't fit between the board and the side wall
+
+## Test prints
+
+Small slices of the real parts, to check fit before printing full pieces:
+
+- `test_corner`: bottom-left frame corner (70 × 50 mm). Lay the lid corner in: check the fit gap, corner radius, lip over the bezel, and that the lid back sits flush with the frame back. Print after the lid is measured.
+- `test_seam`: frame + shell halves around the left seam, bottom wall. Check dovetail slide fit, the V-groove, and that an M2 × 12 plastite screw bites in the pilot hole. Independent of the measurements, so it can print now.
+
+Tune `fit`, `tol` and `screw_pilot_d` from the results.
+
+![test_seam](images/test_seam.png)
 
 ## Render
 
@@ -55,4 +66,4 @@ Requires OpenSCAD 2021.01+.
 openscad -o stl/shell_m.stl -D 'part="shell_m"' x1case.scad
 ```
 
-Parts: `frame_l|m|r`, `tray_l|m|r`, `shell_l|m|r`, plus `assembly` (with `explode` and `show_ghosts`).
+Parts: `frame_l|m|r`, `tray_l|m|r`, `shell_l|m|r`, `test_corner`, `test_seam`, plus `assembly` (with `explode` and `show_ghosts`).
