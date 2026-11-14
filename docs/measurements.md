@@ -12,8 +12,9 @@ Numbers match [measure.png](measure.png). All values in mm. Fill in the value co
 | 5 | Top: lid edge to first lit pixel | `bezel[2]` | |
 | 6 | Bottom: lid edge to first lit pixel | `bezel[3]` | |
 | 7 | Lid thickness at its thickest point | `lid_t` | |
+| 30 | Lid thickness 3 mm in from the edge, all 4 sides | `lid_t_edge` | |
 | 8 / 9 | Every old hinge screw hole: x / y from the lid corner, plus diameter | `lid_anchors` | |
-| 10 | Cable bundle exit at the bottom edge: start x + width | `cable_exit` | |
+| 10 | Cable bundle exit at the bottom edge: start x + width (where the cables really leave, may be at a hinge stub near a corner) | `cable_exit` | |
 | 11 | Board width | `board_w` | |
 | 12 | Board height | `board_h` | |
 | 13 / 14 | Every screw hole H1, H2…: x / y from 0,0, plus hole diameter | `board_holes` | |
@@ -23,10 +24,14 @@ Numbers match [measure.png](measure.png). All values in mm. Fill in the value co
 | 20 | Tallest other part on the heatsink side (RAM, SSD) | `comp_h` | |
 | 21 | Tallest part on the screen side | `gap` | |
 | 22 | Board thickness | `board_t` | |
-| 23 | DC-in centre: distance from the board's bottom edge | `dc_in_y` | |
+| 23 | DC-in centre: distance along the edge from the board corner | `dc_in_y` | |
 | 26 | DC-in centre: height above the board, and on which side | — | |
 | 27 | Plug length incl. strain relief, plus which edge (L/R) | `dc_plug_len`, `dc_in_side` | |
 | 28 | eDP cable length, connector to connector | — | |
 | 29 | Wi-Fi antenna cable lengths, from the M.2 card | — | |
+| 31 | Old hinge screw holes: thread size, metal insert or plastic | `anchor_clear_d` | |
+| 32 | Hinge stubs on the bottom edge: removed without force? If not: x, width, how far they stick out past the back cover | — | |
+
+Batch order: lid first (1–10, R, 30–32) unblocks the `test_corner` print. Board (11–27) next, cables (28, 29) last.
 
 If the board isn't a plain rectangle, a photo taken straight from above with a ruler next to it is enough for the outline.

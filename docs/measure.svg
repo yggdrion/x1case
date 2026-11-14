@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 940" width="1400" height="940" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1090" width="1400" height="1090" font-family="Helvetica, Arial, sans-serif">
   <defs>
     <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#d1342f"/>
@@ -13,7 +13,7 @@
       .b text { fill:#fff; font-size:13px; font-weight:bold; text-anchor:middle; dominant-baseline:central; }
     </style>
   </defs>
-  <rect width="1400" height="940" fill="#ffffff"/>
+  <rect width="1400" height="1090" fill="#ffffff"/>
 
   <!-- ============ A: panel front ============ -->
   <text x="40" y="45" class="ttl">A  Display lid, front (hinges removed)</text>
@@ -66,7 +66,7 @@
   <line x1="80" y1="740" x2="300" y2="740" class="dim"/>
   <line x1="300" y1="740" x2="390" y2="740" class="dim"/>
   <g class="b"><circle cx="190" cy="740" r="13"/><text x="190" y="740">10</text></g>
-  <text x="400" y="745" class="lbl">start x + width</text>
+  <text x="400" y="745" class="lbl">start x + width (may be at a corner)</text>
 
   <!-- ============ C: lid edge ============ -->
   <text x="40" y="800" class="ttl">C  Lid, edge view</text>
@@ -77,6 +77,21 @@
   <line x1="602" y1="840" x2="640" y2="840" class="ext"/><line x1="602" y1="858" x2="640" y2="858" class="ext"/>
   <line x1="630" y1="840" x2="630" y2="858" class="dim"/>
   <g class="b"><circle cx="658" cy="849" r="13"/><text x="658" y="849">7</text></g>
+
+  <!-- 30 edge thickness -->
+  <line x1="80" y1="840" x2="80" y2="812" class="ext"/>
+  <line x1="92" y1="840" x2="92" y2="858" class="dim"/>
+  <g class="b"><circle cx="120" cy="905" r="13"/><text x="120" y="905">30</text></g>
+  <text x="142" y="910" class="lbl">thickness 3 mm in from the edge, all 4 sides (the clamp grips here)</text>
+
+  <!-- ============ H: lid extras ============ -->
+  <text x="40" y="960" class="ttl">H  Lid extras</text>
+  <g class="b"><circle cx="53" cy="990" r="13"/><text x="53" y="990">31</text></g>
+  <text x="75" y="995" class="note">old hinge screw holes: thread size (M2 / M2.5), metal insert or plastic</text>
+  <g class="b"><circle cx="53" cy="1022" r="13"/><text x="53" y="1022">32</text></g>
+  <text x="75" y="1027" class="note">hinge stubs on the bottom edge: unscrew them if they come off without force.</text>
+  <text x="75" y="1047" class="note">If they stay: x from the lid corner, width, how far they stick out past the back cover.</text>
+  <text x="75" y="1067" class="note">Same for anything else sticking out of the outline.</text>
 
   <!-- ============ D: board top view ============ -->
   <text x="720" y="45" class="ttl">D  Mainboard, heatsink side up</text>
