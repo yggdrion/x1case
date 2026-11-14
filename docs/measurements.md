@@ -8,13 +8,13 @@ Order: lid first (1–18) unblocks the `test_corner` print. Board and cooler (19
 
 | # | What | Parameter | Value |
 |---|---|---|---|
-| 1 | Lid width, outer edge to outer edge | `lid_w` | |
-| 2 | Lid height, outer edge to outer edge (hinge stubs not included) | `lid_h` | |
+| 1 | Lid width, outer edge to outer edge | `lid_w` | 361 |
+| 2 | Lid height, outer edge to outer edge (hinge stubs not included) | `lid_h` | 245 |
 | 3 | Corner radius, seen from the front | `lid_r` | |
-| 4 | Bezel left: lid edge to first lit pixel | `bezel[0]` | |
-| 5 | Bezel right | `bezel[1]` | |
-| 6 | Bezel top | `bezel[2]` | |
-| 7 | Bezel bottom | `bezel[3]` | |
+| 4 | Bezel left: lid edge to first lit pixel | `bezel[0]` | 8.8 |
+| 5 | Bezel right | `bezel[1]` | 8 |
+| 6 | Bezel top | `bezel[2]` | 14 |
+| 7 | Bezel bottom | `bezel[3]` | 37 |
 | 11 | Cable exit: start x from 0,0 | `cable_exit[0]` | |
 | 12 | Cable exit: width | `cable_exit[1]` | |
 | 16 | Thickness at the thickest point | `lid_t` | |
