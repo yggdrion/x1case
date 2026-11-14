@@ -69,7 +69,7 @@ board_top_gap = 15;       // board top edge to lid top edge
 board_holes = [[28, 4], [41.5, 34], [109.5, 132], [245, 132], [175, 18], [242, 3.5], [127, 3.5]]; // H1-H7, measured; M2 (silkscreen M2XL3.5)
 // Stock cooler: one blower at each end of the board, heatpipes between, fin stacks on the board's top edge.
 // Blower intake centres [x, y] + intake diameter, relative to the board's bottom-left corner.
-blowers = [[55, 75, 60], [300, 75, 60]]; // PLACEHOLDER
+blowers = [[56, 88, 41], [288, 101, 41]]; // measured; right y PLACEHOLDER (estimated from photo)
 // Fin-stack exhausts on the board's top edge: [start x, width]. They blow up into the top vents.
 fin_exhausts = [[30, 30], [295, 30]];    // PLACEHOLDER
 heatsink_h = 14;          // PLACEHOLDER tallest part on the back side (heatsink + blowers)

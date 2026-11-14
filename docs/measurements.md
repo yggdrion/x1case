@@ -62,8 +62,8 @@ Blowers (24–26) and fin-stack exhausts (27, 28). The edge with the fin stacks 
 
 | Blower | 24: intake centre x | 25: intake centre y | 26: intake diameter | 27: fin exhaust start x | 28: fin exhaust width |
 |---|---|---|---|---|---|
-| left | | | | | |
-| right | | | | | |
+| left | 56 | 88 | 41 | | |
+| right | 288 | ? | 41? | | |
 
 `blowers`, `fin_exhausts`. The 120 mm fan sits on the blower picked by `fan_blower`.
 
