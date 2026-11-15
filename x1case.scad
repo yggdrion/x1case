@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_rb, frame_rt, tray_lb, tray_lt, tray_mb, tray_mt, tray_rb, tray_rt, shell_lb, shell_lt, shell_mb, shell_mt, shell_rb, shell_rt, hood, test_corner, test_seam]
+part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_rb, frame_rt, tray_lb, tray_lt, tray_mb, tray_mt, tray_rb, tray_rt, shell_lb, shell_lt, shell_mb, shell_mt, shell_rb, shell_rt, hood, test_corner, test_seam, test_holes_l, test_holes_r]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -405,6 +405,29 @@ module test_seam() {
   }
 }
 
+// Board hole check: thin skeleton of the board outline with a pin at every mounting hole.
+// Two halves (the board is wider than the bed); butt them together on a flat table, lay the board on top.
+test_holes_split = 205;   // between H5 (x 175) and H6 (x 242)
+test_pin_d = 1.8;         // fits an M2 board hole loosely
+module test_holes(k) {
+  t = 1.2;
+  ring = 6;
+  translate([k == 0 ? 0 : -test_holes_split, 0, 0]) intersection() {
+    union() {
+      linear_extrude(t) {
+        difference() { square([board_w, board_h]); translate([ring, ring]) square([board_w - 2 * ring, board_h - 2 * ring]); }
+        // strap from each hole to the nearer long edge
+        for (h = board_holes) {
+          translate([h[0] - ring / 2, h[1] < board_h / 2 ? 0 : h[1]]) square([ring, h[1] < board_h / 2 ? h[1] : board_h - h[1]]);
+          translate(h) circle(d = 7);
+        }
+      }
+      for (h = board_holes) translate([h[0], h[1], 0]) cylinder(d = test_pin_d, h = t + 4);
+    }
+    translate([k == 0 ? -1 : test_holes_split, -1, -1]) cube([k == 0 ? test_holes_split + 1 : board_w, board_h + 2, 20]);
+  }
+}
+
 // ---------------------------------------------------------------- stub hood
 // Box over a hinge stub, open toward the frame; print open side down, glue on the front of the bottom lip.
 module hood(t) {
@@ -419,6 +442,8 @@ module hood(t) {
 
 if (part == "assembly") assembly();
 else if (part == "hood") hood(stubs[0]); // print 2
+else if (part == "test_holes_l") test_holes(0);
+else if (part == "test_holes_r") test_holes(1);
 else if (part == "test_corner") test_corner();
 else if (part == "test_seam") test_seam();
 else {

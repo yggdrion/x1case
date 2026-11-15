@@ -56,7 +56,9 @@ Small slices of the real parts, to check fit before printing full pieces:
 - `test_corner`: bottom-left frame corner (70 × 50 mm). Lay the lid corner in: check the fit gap, corner radius, lip over the bezel, and that the lid back sits flush with the frame back. Print after the lid is measured.
 - `test_seam`: frame + shell halves around the left seam, bottom wall. Check dovetail slide fit, the V-groove, and that an M2 × 12 plastite screw bites in the pilot hole. Independent of the measurements, so it can print now.
 
-Tune `fit`, `tol` and `screw_pilot_d` from the results.
+- `test_holes_l` + `test_holes_r`: 1.2 mm skeleton of the board outline with an M2 pin at every mounting hole, split in two for the bed. Butt the halves together on a flat table and lay the board on top: every hole should drop over a pin.
+
+Tune `fit`, `tol` and `screw_pilot_d` from the results. Move a `board_holes` entry when its pin misses.
 
 ![test_seam](images/test_seam.png)
 
@@ -68,4 +70,4 @@ Requires OpenSCAD 2021.01+.
 openscad -o stl/shell_mt.stl -D 'part="shell_mt"' x1case.scad
 ```
 
-Parts: `frame|tray|shell` + `_` + column `l|m|r` + row `b|t` (e.g. `shell_lb`), `hood`, `test_corner`, `test_seam`, plus `assembly` (with `explode` and `show_ghosts`).
+Parts: `frame|tray|shell` + `_` + column `l|m|r` + row `b|t` (e.g. `shell_lb`), `hood`, `test_corner`, `test_seam`, `test_holes_l`, `test_holes_r`, plus `assembly` (with `explode` and `show_ghosts`).
