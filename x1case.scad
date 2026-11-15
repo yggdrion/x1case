@@ -1,7 +1,7 @@
 // x1case.scad: all-in-one case for a Lenovo ThinkPad X1 Extreme Gen 1.
 // The original display lid stays intact (panel, bezel, back cover); only the laptop base goes.
 // A printed clamp wraps the lid's edges. A tray on the lid's back carries the mainboard, and the
-// back shell carries a 120 mm assist fan (ESP32-controlled) and a VESA 100 mount.
+// back shell carries two 120 mm assist fans (ESP32-controlled) with a VESA 100 mount between them.
 //
 // Coordinates: X = width (left to right, seen from the front), Y = height (bottom to top),
 // Z = depth (z = 0 is the front face, +Z goes toward the back).
@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_rb, frame_rt, tray_lb, tray_lt, tray_mb, tray_mt, tray_rb, tray_rt, shell_lb, shell_lt, shell_mb, shell_mt, shell_rb, shell_rt, test_corner, test_seam]
+part = "assembly"; // [assembly, frame_lb, frame_lt, frame_rb, frame_rt, tray_lb, tray_lt, tray_rb, tray_rt, shell_lb, shell_lt, shell_rb, shell_rt, test_corner, test_seam]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -49,10 +49,11 @@ rim_over = 6;       // how far the rim reaches over the lid's back edge: presses
 tray_inset = 0.5;   // tray outline inside the lid outline
 tol = 0.2;          // dovetail glue gap (total)
 
-/* [Split: seams must avoid the fan, VESA bosses and cable channel] */
-seams = [61.5, 309];       // real seams (X positions), glued dovetails: just outside the two fans, symmetric
-hseam = 137;             // horizontal seam (Y position): between the fans and the VESA pad
-fake_grooves = false;     // mirrored decorative grooves (the seams are already symmetric)
+/* [Split: seams must avoid the fans, VESA bosses and cable channel] */
+seams = [125.65];          // one real seam (X position), glued dovetails: in the gap between the left fan and the VESA pad
+seam_clear = 2;            // min. distance from a seam to a fan frame or the VESA pad
+hseam = 137;             // horizontal seam (Y position): above the fans and the VESA pad
+fake_grooves = true;      // mirrored decorative groove on the right, between the VESA pad and the right fan
 groove_w = 1.2;           // V-groove width at the surface
 
 /* [Mainboard: PLACEHOLDERS] */
@@ -84,8 +85,7 @@ fan_t = 25;               // standard 120 mm = 25, slim (NF-A12x15) = 15
 fan_clear = 3;            // gap between the heatsink and the fan
 fan_hole_pitch = 105;
 fan_hole_d = 4.4;
-fan_gap = 1;              // between the two fans
-fan_y = 72;               // fan centre height (global): low, over the heatpipe, below the VESA pad
+fan_y = 70;               // fan centre height (global): low, over the blower intakes, clear of the DC window
 
 /* [VESA 100] */
 vesa = 100;
@@ -93,12 +93,13 @@ vesa_insert_d = 5.7;      // M4 heat-set insert hole
 vesa_insert_depth = 8.5;
 vesa_boss_d = 14;
 vesa_boss_h = 7;          // inside the shell, from the back plate
+// VESA pad sits low, between the fans, in the same row as the heavy parts
 rib_t = 3;
 rib_h = 6;
 
 /* [Shell screws: M2 x 12 self-tapping (plastite) into the clamp wall] */
 screw_inset = 15;         // from each piece's edges
-side_screw_y_rel = [0.2]; // side-wall screws as a fraction of H
+side_screw_y_rel = [0.65]; // side-wall screws as a fraction of H: above the fans, which sit against the side walls
 boss_d = 7;
 screw_floor = 6;          // material under the counterbore
 screw_clear = 2.4;
@@ -106,11 +107,11 @@ screw_head = 4.4;
 screw_pilot_d = 1.8;      // pilot hole in the frame wall
 screw_pilot_depth = 6.5;
 
-/* [Electronics bay, right piece] */
+/* [Electronics bay, top right] */
 esp_size = [23.5, 18.5];  // ESP32-C3 SuperMini, USB-C toward the right wall
-esp_y = 40;
+esp_y = 175;
 buck_size = [22, 17];     // MP1584-style buck, x2 (12 V fan, 5 V ESP32)
-buck_y = [72, 97];        // clear of the horizontal seam tabs
+buck_y = [205, 230];      // above the ESP32, below the top wall
 cradle_wall = 1.6;
 cradle_h = 4;
 
@@ -134,7 +135,7 @@ zb = lip_t + lid_t_edge;            // lid back edge = frame back face = shell f
 z_tray = lip_t + lid_t;             // tray rests on the lid back's thickest point
 z_board = z_tray + tray_t + gap;    // board front face
 z_board_back = z_board + board_t;
-inner_d = tray_t + gap + board_t + max(heatsink_h + fan_clear + fan_t, comp_h); // fans sit over the heatpipe and blowers
+inner_d = tray_t + gap + board_t + max(heatsink_h + fan_clear + fan_t, comp_h); // fans sit over the blowers
 D = z_tray + inner_d + back_t;      // total depth
 z_in = D - back_t;                  // inside face of the back plate
 
@@ -142,10 +143,10 @@ board_pos = [(W - board_w) / 2, ly0 + board_bottom_gap];
 cable_x = [for (c = cable_exits) [lx0 + c[0], lx0 + c[0] + c[1]]]; // global X ranges
 
 bounds = concat([0], seams, [W]);
-// two 120 mm fans side by side, centred, over the heatpipe
-fan_cs = [for (k = [-1, 1]) [W / 2 + k * (fan_size + fan_gap) / 2, fan_y]];
-// VESA pad as high as it goes, above the fans
-vesa_c = [W / 2, H - shell_wall - vesa / 2 - vesa_boss_d / 2 + 1]; // +1: top bosses merge into the wall (tangent = non-manifold)
+// two 120 mm fans against the side walls, each over a blower intake
+fan_cs = [for (k = [-1, 1]) [W / 2 + k * (W / 2 - shell_wall - fan_size / 2), fan_y]];
+// VESA pad between the fans, same height
+vesa_c = [W / 2, fan_y];
 groove_x = fake_grooves ? concat(seams, [for (s = seams) W - s]) : seams;
 
 screw_x = [for (i = [0 : len(bounds) - 2]) each [bounds[i] + screw_inset, bounds[i + 1] - screw_inset]];
@@ -158,7 +159,7 @@ screw_pts = concat(
 // Dovetail tabs per part: [y, neck, head, length]
 frame_tabs = [[clamp_wall_bottom / 2, 2.5, 4, 3], [H - clamp_wall / 2, 2, 3.5, 3]];
 shell_tabs = [[clamp_wall_bottom / 2, 2.5, 4, 3], [H - clamp_wall / 2, 2, 3.5, 3],
-              [H * 0.12, 6, 10, 5], [H * 0.5, 6, 10, 5], [H * 0.75, 6, 10, 5]];
+              [H * 0.12, 6, 10, 5], [H * 0.3, 6, 10, 5], [H * 0.75, 6, 10, 5]]; // 0.12 and 0.3: between the VESA bosses
 tray_tabs = [[ly0 + lid_h * 0.12, 6, 10, 5], [ly0 + lid_h * 0.5, 6, 10, 5],
              [ly0 + lid_h * 0.8, 6, 10, 5]];
 // Horizontal seam tabs: [x, neck, head, length]. Frame: in the side walls. Shell + tray: two per column, in the plate.
@@ -186,10 +187,12 @@ for (f = fan_rects) {
   if (f[0] < shell_wall || f[1] < shell_wall || f[0] + fan_size > W - shell_wall || f[1] + fan_size > H - shell_wall)
     echo("WARNING: a fan does not fit inside the shell walls");
   if (rects_overlap(f, vesa_rect)) echo("WARNING: a fan overlaps the VESA bosses");
+  if (rects_overlap(f, [board_pos[0] + dc_window[0], board_pos[1] + dc_window[1], dc_window[2], dc_window[3]])) echo("WARNING: a fan overlaps the DC jack window");
+  for (p = screw_pts) if (rects_overlap(f, [p[0] - boss_d / 2, p[1] - boss_d / 2, boss_d, boss_d])) echo("WARNING: a fan hits a shell screw boss");
 }
 for (s = seams) {
-  for (f = fan_rects) if (s > f[0] - 3 && s < f[0] + f[2] + 3) echo(str("WARNING: seam ", s, " cuts a fan"));
-  if (s > vesa_rect[0] - 3 && s < vesa_rect[0] + vesa_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the VESA pad"));
+  for (f = fan_rects) if (s > f[0] - seam_clear && s < f[0] + f[2] + seam_clear) echo(str("WARNING: seam ", s, " cuts a fan"));
+  if (s > vesa_rect[0] - seam_clear && s < vesa_rect[0] + vesa_rect[2] + seam_clear) echo(str("WARNING: seam ", s, " cuts the VESA pad"));
 }
 for (s = seams, c = cable_x) if (s > c[0] - 5 && s < c[1] + 5) echo(str("WARNING: seam ", s, " cuts a cable channel"));
 for (s = seams) if (s > board_pos[0] + dc_window[0] - 3 && s < board_pos[0] + dc_window[0] + dc_window[2] + 3) echo(str("WARNING: seam ", s, " cuts the DC jack window"));
@@ -358,7 +361,7 @@ module ghosts() {
 }
 
 // ---------------------------------------------------------------- parts
-names = ["l", "m", "r"];
+names = len(seams) == 1 ? ["l", "r"] : ["l", "m", "r"];
 function idx(s) = [for (k = [0 : len(names) - 1]) if (names[k] == s) k][0];
 
 module print_frame(i, j) translate([-bounds[i], -rows[j], 0]) split(i, j, frame_tabs, frame_htabs) frame_full();

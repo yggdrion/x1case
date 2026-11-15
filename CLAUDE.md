@@ -11,7 +11,7 @@ Parametric OpenSCAD case for a Lenovo ThinkPad X1 Extreme Gen 1. See `README.md`
 ## Render
 
 ```bash
-openscad -o stl/shell_mt.stl -D 'part="shell_mt"' x1case.scad
+openscad -o stl/shell_rb.stl -D 'part="shell_rb"' x1case.scad
 ```
 
 A render must finish with no `WARNING` lines. The file's own echo checks (bed fit, seam vs fan/VESA, fan vs heatsink) print as `WARNING` too.
