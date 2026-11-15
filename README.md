@@ -12,7 +12,7 @@ The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.
 |---|---|---|
 | Front clamp ring | `frame_*` | 6 pieces, printed front face down. A 3 mm lip over the lid's front edge, a 4.5 mm wall (7.5 mm at the bottom, with the cable channel) and pilot holes for the shell screws |
 | Display lid | — | Original. The hinge stubs stay on and stick out 12 mm past the glass; a 14 mm bottom lip covers the open strip along the hinge edge, with an open hole for each stub (cut the stubs off later) |
-| Board tray | `tray_*` | 6 pieces. Covers the lid back up to its edge; the shell rim clamps its edge onto the lid (no screws). Carries the board standoffs (M2 inserts) |
+| Board tray | `tray_*` | 6 pieces. Covers the lid back up to its edge; the shell rim clamps its edge onto the lid (no screws). Flat: M2 × 5 mm brass standoffs (female-female) screw onto the board and get glued to the tray, so no hole positions need measuring |
 | Air gap, board + stock heatsink/blowers | — | Board top side faces the lid, heatsink side faces the back |
 | Back shell | `shell_*` | 6 pieces, printed back face down. Two 120 mm fan grilles, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, a window for the stock DC-in jack in the back plate, top/bottom vents. No board port cutouts: only DC-in is used |
 
@@ -55,9 +55,7 @@ Small slices of the real parts, to check fit before printing full pieces:
 - `test_corner`: bottom-left frame corner (70 × 50 mm). Lay the lid corner in: check the fit gap, corner radius, lip over the bezel, and that the lid back sits flush with the frame back. Print after the lid is measured.
 - `test_seam`: frame + shell halves around the left seam, bottom wall. Check dovetail slide fit, the V-groove, and that an M2 × 12 plastite screw bites in the pilot hole. Independent of the measurements, so it can print now.
 
-- `test_holes_l` + `test_holes_r`: 1.2 mm skeleton of the board outline with an M2 pin at every mounting hole, split in two for the bed. Butt the halves together on a flat table and lay the board on top: every hole should drop over a pin.
-
-Tune `fit`, `tol` and `screw_pilot_d` from the results. Move a `board_holes` entry when its pin misses.
+Tune `fit`, `tol` and `screw_pilot_d` from the results.
 
 ![test_seam](images/test_seam.png)
 
@@ -69,4 +67,4 @@ Requires OpenSCAD 2021.01+.
 openscad -o stl/shell_mt.stl -D 'part="shell_mt"' x1case.scad
 ```
 
-Parts: `frame|tray|shell` + `_` + column `l|m|r` + row `b|t` (e.g. `shell_lb`), `test_corner`, `test_seam`, `test_holes_l`, `test_holes_r`, plus `assembly` (with `explode` and `show_ghosts`).
+Parts: `frame|tray|shell` + `_` + column `l|m|r` + row `b|t` (e.g. `shell_lb`), `test_corner`, `test_seam`, plus `assembly` (with `explode` and `show_ghosts`).

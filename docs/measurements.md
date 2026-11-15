@@ -46,7 +46,7 @@ Hinge stubs (13–15, 18). They stick out on the glass side and stay on (no scre
 | 31 | Tallest other part on the heatsink side (RAM, SSD) | `comp_h` | |
 | 32 | Tallest part on the screen side | `gap` | |
 
-Board holes (21–23), one row per hole:
+Board holes (21–23): not used. The standoffs are screwed to the board and glued to the tray, so their positions don't matter. Kept for reference:
 
 | Hole | 21: x | 22: y | 23: diameter |
 |---|---|---|---|

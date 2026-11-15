@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_rb, frame_rt, tray_lb, tray_lt, tray_mb, tray_mt, tray_rb, tray_rt, shell_lb, shell_lt, shell_mb, shell_mt, shell_rb, shell_rt, test_corner, test_seam, test_holes_l, test_holes_r]
+part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_rb, frame_rt, tray_lb, tray_lt, tray_mb, tray_mt, tray_rb, tray_rt, shell_lb, shell_lt, shell_mb, shell_mt, shell_rb, shell_rt, test_corner, test_seam]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -41,7 +41,7 @@ clamp_wall = 4.5;         // clamp wall left, right and top (thin so the height 
 clamp_wall_bottom = 7.5;  // bottom clamp wall, holds the cable channel
 lip_t = 2;          // front lip thickness
 tray_t = 2;         // board tray on the lid back
-gap = 5;            // air gap between tray and board (= board standoff height)
+gap = 5;            // air gap between tray and board: M2 x 5 brass standoffs (female-female), screwed to the board and glued to the tray
 shell_wall = 3;     // back shell side walls
 back_t = 2.5;       // back shell rear plate
 rim_t = 5;          // shell front rim; its underside is recessed tray_t deep where the tray edge sits
@@ -60,9 +60,7 @@ board_w = 355;            // board outline width (measured)
 board_h = 138;            // board outline height (measured)
 board_t = 1.2;
 board_bottom_gap = 4;     // board bottom edge above the lid's bottom edge: board sits low, short cables
-// PLACEHOLDER mounting holes, relative to the board's bottom-left corner
-board_holes = [[28, 4], [41.5, 34], [109.5, 132], [245, 132], [175, 18], [242, 3.5], [127, 3.5],
-               [349, 15], [352, 47], [350, 75], [353, 94], [343, 103]]; // H1-H12, measured; M2 (silkscreen M2XL3.5). Right-edge x approximate (edge not straight)
+// No mounting holes in the model: the standoffs are glued to the flat tray wherever the board puts them.
 // Stock cooler: one blower at each end of the board, heatpipes between, fin stacks on the board's top edge.
 // Blower intake centres [x, y] + intake diameter, relative to the board's bottom-left corner.
 blowers = [[56, 88, 41], [290, 90, 41]]; // measured
@@ -70,8 +68,6 @@ blowers = [[56, 88, 41], [290, 90, 41]]; // measured
 fin_exhausts = [[34, 72], [250, 66]];    // measured
 heatsink_h = 10;          // tallest part on the back side: blowers, ~10 mm (measured)
 comp_h = 5;               // PLACEHOLDER tallest other part on the back side (RAM, SSD)
-m2_insert_d = 3.2;        // M2 heat-set insert hole
-m2_insert_depth = 4;
 // Stock DC-in jack: on a short cable next to the right fin stack. It points out through the back plate,
 // so the charger (brick stays outside the case) plugs in from behind.
 // The jack barely moves, so instead of a fitted sleeve the back plate gets an oversized window around it;
@@ -276,17 +272,9 @@ module frame_full() {
   }
 }
 
-// ---------------------------------------------------------------- tray (on the lid back, board standoffs)
-module tray_full() {
-  difference() {
-    union() {
-      // full lid outline: the shell rim clamps the tray edge onto the lid, no screws or glue
-      translate([0, 0, z_tray]) linear_extrude(tray_t) lid2d(-tray_inset);
-      for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], z_tray + tray_t - 0.01]) cylinder(d = 6, h = gap);
-    }
-    for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], z_board - m2_insert_depth]) cylinder(d = m2_insert_d, h = m2_insert_depth + 1);
-  }
-}
+// ---------------------------------------------------------------- tray (on the lid back, flat: board standoffs are glued on)
+// full lid outline: the shell rim clamps the tray edge onto the lid, no screws or glue
+module tray_full() translate([0, 0, z_tray]) linear_extrude(tray_t) lid2d(-tray_inset);
 
 // ---------------------------------------------------------------- shell (back cover)
 module cradle(size, open_right) {
@@ -352,8 +340,8 @@ module shell_full() {
     translate([board_pos[0] + dc_window[0], board_pos[1] + dc_window[1], z_in - 1]) linear_extrude(back_t + 2) translate([dc_window[2] / 2, dc_window[3] / 2]) rrect(dc_window[2], dc_window[3], 3);
     // recess for the tray edge: the rim presses the tray onto the lid
     translate([0, 0, zb - 1]) linear_extrude(tray_t + 1) lid2d(-tray_inset + 0.3);
-    // clearance around board standoffs near the edge
-    for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], zb - 1]) cylinder(d = 7, h = rim_t + 2);
+    // rim stays out of the board footprint: the glued standoffs can sit anywhere under the board
+    translate([board_pos[0], board_pos[1], zb - 1]) cube([board_w, board_h, rim_t + 2]);
     grooves();
   }
 }
@@ -404,32 +392,7 @@ module test_seam() {
   }
 }
 
-// Board hole check: thin skeleton of the board outline with a pin at every mounting hole.
-// Two halves (the board is wider than the bed); butt them together on a flat table, lay the board on top.
-test_holes_split = 205;   // between H5 (x 175) and H6 (x 242)
-test_pin_d = 1.8;         // fits an M2 board hole loosely
-module test_holes(k) {
-  t = 1.2;
-  ring = 6;
-  translate([k == 0 ? 0 : -test_holes_split, 0, 0]) intersection() {
-    union() {
-      linear_extrude(t) {
-        difference() { square([board_w, board_h]); translate([ring, ring]) square([board_w - 2 * ring, board_h - 2 * ring]); }
-        // strap from each hole to the nearer long edge
-        for (h = board_holes) {
-          translate([h[0] - ring / 2, h[1] < board_h / 2 ? 0 : h[1]]) square([ring, h[1] < board_h / 2 ? h[1] : board_h - h[1]]);
-          translate(h) circle(d = 7);
-        }
-      }
-      for (h = board_holes) translate([h[0], h[1], 0]) cylinder(d = test_pin_d, h = t + 4);
-    }
-    translate([k == 0 ? -1 : test_holes_split, -1, -1]) cube([k == 0 ? test_holes_split + 1 : board_w, board_h + 2, 20]);
-  }
-}
-
 if (part == "assembly") assembly();
-else if (part == "test_holes_l") test_holes(0);
-else if (part == "test_holes_r") test_holes(1);
 else if (part == "test_corner") test_corner();
 else if (part == "test_seam") test_seam();
 else {
