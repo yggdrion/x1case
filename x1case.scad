@@ -38,7 +38,7 @@ fit = 0.3;          // lid clearance per side
 lid_anchors = [[20, 8], [35, 8], [326.8, 8], [341.8, 8]]; // PLACEHOLDER
 anchor_clear_d = 2.4;     // M2 clearance in the tray
 // Cable bundle (eDP, touch, webcam, Wi-Fi) leaving the lid's bottom edge at the old hinge gap
-cable_exits = [[92.5, 15], [293.5, 15]]; // [start x from the lid's left edge, width]: centred ~100 mm from the left, ~60 mm from the right (measured); round cables only, no ribbon
+cable_exits = [[92.5, 15], [282.5, 15]]; // [start x from the lid's left edge, width]: centred ~100 mm from the left, ~60 mm from the right (measured); round cables only, no ribbon
 cable_d = 4.5;            // channel depth below the lid edge, inside the bottom clamp wall
 
 /* [Case] */
@@ -55,16 +55,16 @@ tray_inset = 0.5;   // tray clearance inside the rim
 tol = 0.2;          // dovetail glue gap (total)
 
 /* [Split: seams must avoid the fan, VESA bosses and cable channel] */
-seams = [158, 320];      // real seams (X positions), glued dovetails
-hseam = 64;              // horizontal seam (Y position): the case is taller than the bed
-fake_grooves = true;      // mirrored decorative grooves
+seams = [61.5, 309];       // real seams (X positions), glued dovetails: just outside the two fans, symmetric
+hseam = 137;             // horizontal seam (Y position): between the fans and the VESA pad
+fake_grooves = false;     // mirrored decorative grooves (the seams are already symmetric)
 groove_w = 1.2;           // V-groove width at the surface
 
 /* [Mainboard: PLACEHOLDERS] */
 board_w = 355;            // board outline width (measured)
 board_h = 138;            // board outline height (measured)
 board_t = 1.2;
-board_top_gap = 15;       // board top edge to lid top edge
+board_bottom_gap = 4;     // board bottom edge above the lid's bottom edge: board sits low, short cables
 // PLACEHOLDER mounting holes, relative to the board's bottom-left corner
 board_holes = [[28, 4], [41.5, 34], [109.5, 132], [245, 132], [175, 18], [242, 3.5], [127, 3.5],
                [349, 15], [352, 47], [350, 75], [353, 94], [343, 103]]; // H1-H12, measured; M2 (silkscreen M2XL3.5). Right-edge x approximate (edge not straight)
@@ -93,7 +93,8 @@ fan_t = 25;               // standard 120 mm = 25, slim (NF-A12x15) = 15
 fan_clear = 3;            // gap between the heatsink and the fan
 fan_hole_pitch = 105;
 fan_hole_d = 4.4;
-fan_blower = 0;           // index in `blowers`: the fan sits over this blower and pushes air into it
+fan_gap = 1;              // between the two fans
+fan_y = 72;               // fan centre height (global): low, over the heatpipe, below the VESA pad
 
 /* [VESA 100] */
 vesa = 100;
@@ -142,19 +143,18 @@ zb = lip_t + lid_t_edge;            // lid back edge = frame back face = shell f
 z_tray = lip_t + lid_t;             // tray rests on the lid back's thickest point
 z_board = z_tray + tray_t + gap;    // board front face
 z_board_back = z_board + board_t;
-inner_d = tray_t + gap + board_t + max(heatsink_h + fan_clear + fan_t, comp_h); // fan sits on top of a blower
+inner_d = tray_t + gap + board_t + max(heatsink_h + fan_clear + fan_t, comp_h); // fans sit over the heatpipe and blowers
 D = z_tray + inner_d + back_t;      // total depth
 z_in = D - back_t;                  // inside face of the back plate
 
-board_pos = [(W - board_w) / 2, ly0 + lid_h - board_top_gap - board_h];
+board_pos = [(W - board_w) / 2, ly0 + board_bottom_gap];
 cable_x = [for (c = cable_exits) [lx0 + c[0], lx0 + c[0] + c[1]]]; // global X ranges
 
 bounds = concat([0], seams, [W]);
-// fan centred on its blower, pushed inward where the blower sits too close to a wall
-// ponytail: fan only partly covers the blower then; a duct would fix that if temps need it
-fan_lim = shell_wall + 2 + fan_size / 2;
-fan_c = [for (k = [0, 1]) let(b = board_pos[k] + blowers[fan_blower][k], hi = (k == 0 ? W : H) - fan_lim) min(max(b, fan_lim), hi)];
-vesa_c = [(seams[0] + seams[len(seams) - 1]) / 2, H / 2];
+// two 120 mm fans side by side, centred, over the heatpipe
+fan_cs = [for (k = [-1, 1]) [W / 2 + k * (fan_size + fan_gap) / 2, fan_y]];
+// VESA pad as high as it goes, above the fans
+vesa_c = [W / 2, H - shell_wall - vesa / 2 - vesa_boss_d / 2];
 groove_x = fake_grooves ? concat(seams, [for (s = seams) W - s]) : seams;
 
 screw_x = [for (i = [0 : len(bounds) - 2]) each [bounds[i] + screw_inset, bounds[i + 1] - screw_inset]];
@@ -177,7 +177,7 @@ plate_htabs = [for (i = [0 : len(bounds) - 2]) let(c = (bounds[i] + bounds[i + 1
 
 // ---------------------------------------------------------------- checks
 function rects_overlap(a, b) = a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3];
-fan_rect = [fan_c[0] - fan_size / 2, fan_c[1] - fan_size / 2, fan_size, fan_size];
+fan_rects = [for (c = fan_cs) [c[0] - fan_size / 2, c[1] - fan_size / 2, fan_size, fan_size]];
 vesa_rect = [vesa_c[0] - vesa / 2 - vesa_boss_d / 2, vesa_c[1] - vesa / 2 - vesa_boss_d / 2, vesa + vesa_boss_d, vesa + vesa_boss_d];
 
 echo(str("Case outer W x H x D = ", W, " x ", H, " x ", D, " mm"));
@@ -187,20 +187,20 @@ for (i = [0 : len(bounds) - 2], j = [0, 1]) {
   if (w > bed - 2 * bed_margin || h > bed - 2 * bed_margin)
     echo(str("WARNING: piece ", i, "/", j, " (", w, " x ", h, ") does not fit the bed"));
 }
-if (hseam > fan_rect[1] - 3 && hseam < fan_rect[1] + fan_size + 3) echo("WARNING: horizontal seam cuts the fan");
+for (f = fan_rects) if (hseam > f[1] - 3 && hseam < f[1] + fan_size + 3) echo("WARNING: horizontal seam cuts a fan");
 if (hseam > vesa_rect[1] - 3 && hseam < vesa_rect[1] + vesa_rect[3] + 3) echo("WARNING: horizontal seam cuts the VESA pad");
 if (hseam < esp_y + esp_size[1] + cradle_wall + 2 && hseam > esp_y - cradle_wall - 2) echo("WARNING: horizontal seam cuts the ESP32 cradle");
 for (y = buck_y) if (hseam + 6 > y - cradle_wall && hseam < y + buck_size[1] + cradle_wall) echo("WARNING: horizontal seam tabs hit a buck cradle");
-if (fan_rect[0] < shell_wall || fan_rect[1] < shell_wall || fan_rect[0] + fan_size > W - shell_wall || fan_rect[1] + fan_size > H - shell_wall)
-  echo("WARNING: fan over the blower does not fit inside the shell walls");
-if (rects_overlap(fan_rect, vesa_rect)) echo("WARNING: fan overlaps the VESA bosses");
+for (f = fan_rects) {
+  if (f[0] < shell_wall || f[1] < shell_wall || f[0] + fan_size > W - shell_wall || f[1] + fan_size > H - shell_wall)
+    echo("WARNING: a fan does not fit inside the shell walls");
+  if (rects_overlap(f, vesa_rect)) echo("WARNING: a fan overlaps the VESA bosses");
+}
 for (s = seams) {
-  if (s > fan_rect[0] - 3 && s < fan_rect[0] + fan_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the fan"));
+  for (f = fan_rects) if (s > f[0] - 3 && s < f[0] + f[2] + 3) echo(str("WARNING: seam ", s, " cuts a fan"));
   if (s > vesa_rect[0] - 3 && s < vesa_rect[0] + vesa_rect[2] + 3) echo(str("WARNING: seam ", s, " cuts the VESA pad"));
 }
 for (s = seams, c = cable_x) if (s > c[0] - 5 && s < c[1] + 5) echo(str("WARNING: seam ", s, " cuts a cable channel"));
-// ponytail: a seam only blanks ~11 mm of vents, so only the middle half of an exhaust is off limits
-for (s = seams, f = fin_exhausts) if (s > board_pos[0] + f[0] + f[1] / 4 && s < board_pos[0] + f[0] + f[1] * 3 / 4) echo(str("WARNING: seam ", s, " blocks a fin-stack exhaust"));
 for (s = seams) if (s > board_pos[0] + dc_window[0] - 3 && s < board_pos[0] + dc_window[0] + dc_window[2] + 3) echo(str("WARNING: seam ", s, " cuts the DC jack window"));
 if (min([bezel[0], bezel[1], bezel[2]]) <= lip_w || bezel[3] <= lip_w_bottom) echo("WARNING: clamp lip covers lit pixels (lip_w or lip_w_bottom >= a bezel value)");
 
@@ -216,8 +216,9 @@ module grooves() {
   for (x = groove_x) {
     translate([x, H / 2, 0]) rotate([0, 45, 0]) cube([s, H + 2, s], center = true);
     // back face: stop short of the fan grille
-    if (x > fan_c[0] - fan_size / 2 && x < fan_c[0] + fan_size / 2) {
-      for (seg = [[-1, fan_c[1] - fan_size / 2], [fan_c[1] + fan_size / 2, H + 1]])
+    hit = [for (c = fan_cs) if (x > c[0] - fan_size / 2 && x < c[0] + fan_size / 2) c];
+    if (len(hit) > 0) {
+      for (seg = [[-1, hit[0][1] - fan_size / 2], [hit[0][1] + fan_size / 2, H + 1]])
         translate([x, (seg[0] + seg[1]) / 2, D]) rotate([0, 45, 0]) cube([s, seg[1] - seg[0], s], center = true);
     } else translate([x, H / 2, D]) rotate([0, 45, 0]) cube([s, H + 2, s], center = true);
     for (y = [0, H]) translate([x, y, D / 2]) rotate([0, 0, 45]) cube([s, s, D + 2], center = true);
@@ -326,7 +327,7 @@ module shell_full() {
       for (p = screw_pts) translate([p[0], p[1], zb]) cylinder(d = boss_d, h = D - zb);
       // VESA bosses + ribs
       for (dx = [-1, 1], dy = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2, vesa_c[1] + dy * vesa / 2, z_in - vesa_boss_h]) cylinder(d = vesa_boss_d, h = vesa_boss_h + 0.01);
-      for (dx = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2 - rib_t / 2, shell_wall, z_in - rib_h]) cube([rib_t, H - 2 * shell_wall, rib_h + 0.01]);
+      for (dx = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2 - rib_t / 2, vesa_c[1] - vesa / 2, z_in - rib_h]) cube([rib_t, vesa, rib_h + 0.01]);
       for (dy = [-1, 1]) translate([vesa_c[0] - vesa / 2, vesa_c[1] + dy * vesa / 2 - rib_t / 2, z_in - rib_h]) cube([vesa, rib_t, rib_h + 0.01]);
       // electronics cradles
       translate([esp_x, esp_y, z_in + 0.01]) cradle(esp_size, true);
@@ -340,11 +341,11 @@ module shell_full() {
     // VESA inserts from the back
     for (dx = [-1, 1], dy = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2, vesa_c[1] + dy * vesa / 2, D - vesa_insert_depth]) cylinder(d = vesa_insert_d, h = vesa_insert_depth + 1);
     // fan grille (concentric rings with 4 spokes) + screw holes
-    translate([fan_c[0], fan_c[1], z_in - 1]) linear_extrude(back_t + 2) difference() {
+    for (c = fan_cs) translate([c[0], c[1], z_in - 1]) linear_extrude(back_t + 2) difference() {
       union() for (r = [15 : 9 : fan_size / 2 - 5]) difference() { circle(r = r); circle(r = r - 5); }
       for (a = [0, 90]) rotate(a + 45) square([fan_size, 4], center = true);
     }
-    for (dx = [-1, 1], dy = [-1, 1]) translate([fan_c[0] + dx * fan_hole_pitch / 2, fan_c[1] + dy * fan_hole_pitch / 2, z_in - 1]) cylinder(d = fan_hole_d, h = back_t + 2);
+    for (c = fan_cs, dx = [-1, 1], dy = [-1, 1]) translate([c[0] + dx * fan_hole_pitch / 2, c[1] + dy * fan_hole_pitch / 2, z_in - 1]) cylinder(d = fan_hole_d, h = back_t + 2);
     // vents: bottom = intake, top = exhaust (chimney)
     for (x = [vent_end : vent_pitch : W - vent_end])
       if (min([for (s = concat(screw_x, seams)) abs(x - s)]) > boss_d / 2 + 2)
@@ -365,7 +366,7 @@ module ghosts() {
   %translate([0, 0, lip_t]) linear_extrude(lid_t) lid2d();
   %translate([board_pos[0], board_pos[1], z_board]) cube([board_w, board_h, board_t]);
   for (b = blowers) %translate([board_pos[0] + b[0], board_pos[1] + b[1], z_board_back]) cylinder(d = b[2] + 10, h = heatsink_h);
-  %translate([fan_rect[0], fan_rect[1], z_in - fan_t]) cube([fan_size, fan_size, fan_t]);
+  for (f = fan_rects) %translate([f[0], f[1], z_in - fan_t]) cube([fan_size, fan_size, fan_t]);
   %translate([W - shell_wall - esp_size[0], esp_y, z_in - 1.6]) cube([esp_size[0], esp_size[1], 1.6]);
 }
 
