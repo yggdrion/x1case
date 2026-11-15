@@ -24,7 +24,7 @@ lid_t_edge = 7;     // thickness 3 mm in from the outline; the clamp grips here 
 lid_r = 3;          // corner radius (seen from the front), guessed small on purpose: too small only leaves a gap at the corner, too big stops the lid from seating
 // Panel (from EDID on the 20MF000TGE): AUO B156ZAN03.2, 3840x2160, active area 344 x 193 mm.
 bezel = [8.8, 8, 14, 37]; // measured: lid edge to first lit pixel: [left, right, top, bottom]; 8.8 + 344.2 + 8 = lid_w, 14 + 193 + 37 = lid_h ±1
-lip_w = 3;          // how far the clamp lip reaches over the lid's front edge (left, right, top)
+lip_w = 3;          // how far the clamp lip reaches over the lid's front edge (left, right, top): narrow front border
 lip_w_bottom = 14;  // bottom lip: covers the open strip with the antennas and cables along the hinge edge
 // Hinge stubs: fixed to the lid (no screw), stick out on the glass side inside the bottom strip.
 // [x from the lid's left edge, width, height up from the bottom edge]; the right one mirrors at 44 mm from the right edge.
@@ -150,7 +150,7 @@ bounds = concat([0], seams, [W]);
 // two 120 mm fans side by side, centred, over the heatpipe
 fan_cs = [for (k = [-1, 1]) [W / 2 + k * (fan_size + fan_gap) / 2, fan_y]];
 // VESA pad as high as it goes, above the fans
-vesa_c = [W / 2, H - shell_wall - vesa / 2 - vesa_boss_d / 2];
+vesa_c = [W / 2, H - shell_wall - vesa / 2 - vesa_boss_d / 2 + 1]; // +1: top bosses merge into the wall (tangent = non-manifold)
 groove_x = fake_grooves ? concat(seams, [for (s = seams) W - s]) : seams;
 
 screw_x = [for (i = [0 : len(bounds) - 2]) each [bounds[i] + screw_inset, bounds[i + 1] - screw_inset]];
