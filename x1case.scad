@@ -33,10 +33,6 @@ stub_out = 12;      // how far a stub sticks out past the glass (measured)
 stub_clear = 0.5;   // gap around a stub, per side
 hood_wall = 1.6;    // stub hood: printed separately, glued on the front over the hole in the lip
 fit = 0.3;          // lid clearance per side
-// Old hinge screw holes in the lid, used to anchor the board tray.
-// [x, y] from the lid's bottom-left corner, seen from the FRONT.
-lid_anchors = [[20, 8], [35, 8], [326.8, 8], [341.8, 8]]; // PLACEHOLDER
-anchor_clear_d = 2.4;     // M2 clearance in the tray
 // Cable bundle (eDP, touch, webcam, Wi-Fi) leaving the lid's bottom edge at the old hinge gap
 cable_exits = [[92.5, 15], [282.5, 15]]; // [start x from the lid's left edge, width]: centred ~100 mm from the left, ~60 mm from the right (measured); round cables only, no ribbon
 cable_d = 4.5;            // channel depth below the lid edge, inside the bottom clamp wall
@@ -49,9 +45,9 @@ tray_t = 2;         // board tray on the lid back
 gap = 5;            // air gap between tray and board (= board standoff height)
 shell_wall = 3;     // back shell side walls
 back_t = 2.5;       // back shell rear plate
-rim_t = 3;          // shell front rim that clamps the lid's back edge
-rim_over = 2;       // how far the rim reaches over the lid's back edge
-tray_inset = 0.5;   // tray clearance inside the rim
+rim_t = 5;          // shell front rim; its underside is recessed tray_t deep where the tray edge sits
+rim_over = 6;       // how far the rim reaches over the lid's back edge: presses the tray edge onto the lid
+tray_inset = 0.5;   // tray outline inside the lid outline
 tol = 0.2;          // dovetail glue gap (total)
 
 /* [Split: seams must avoid the fan, VESA bosses and cable channel] */
@@ -285,11 +281,11 @@ module frame_full() {
 module tray_full() {
   difference() {
     union() {
-      translate([0, 0, z_tray]) linear_extrude(tray_t) lid2d(-rim_over - tray_inset);
+      // full lid outline: the shell rim clamps the tray edge onto the lid, no screws or glue
+      translate([0, 0, z_tray]) linear_extrude(tray_t) lid2d(-tray_inset);
       for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], z_tray + tray_t - 0.01]) cylinder(d = 6, h = gap);
     }
     for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], z_board - m2_insert_depth]) cylinder(d = m2_insert_d, h = m2_insert_depth + 1);
-    for (a = lid_anchors) translate([lx0 + a[0], ly0 + a[1], z_tray - 1]) cylinder(d = anchor_clear_d, h = tray_t + 2);
   }
 }
 
@@ -355,6 +351,10 @@ module shell_full() {
     translate([W - shell_wall - 1, esp_y + esp_size[1] / 2, z_in - 3.2]) rotate([0, 90, 0]) linear_extrude(shell_wall + 2) rrect(4.5, 10, 1.5);
     // stock DC-in jack: oversized window in the back plate, jack hot-glued in place
     translate([board_pos[0] + dc_window[0], board_pos[1] + dc_window[1], z_in - 1]) linear_extrude(back_t + 2) translate([dc_window[2] / 2, dc_window[3] / 2]) rrect(dc_window[2], dc_window[3], 3);
+    // recess for the tray edge: the rim presses the tray onto the lid
+    translate([0, 0, zb - 1]) linear_extrude(tray_t + 1) lid2d(-tray_inset + 0.3);
+    // clearance around board standoffs near the edge
+    for (h = board_holes) translate([board_pos[0] + h[0], board_pos[1] + h[1], zb - 1]) cylinder(d = 7, h = rim_t + 2);
     grooves();
   }
 }

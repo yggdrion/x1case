@@ -13,7 +13,7 @@ The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.
 | Front clamp ring | `frame_*` | 6 pieces, printed front face down. A 3 mm lip over the lid's front edge, a 4.5 mm wall (7.5 mm at the bottom, with the cable channel) and pilot holes for the shell screws |
 | Display lid | — | Original. The hinge stubs stay on and stick out 12 mm past the glass; a 14 mm bottom lip covers the open strip along the hinge edge |
 | Stub hoods | `hood` | Print 2. Small caps glued on the front of the bottom lip over the stubs, which poke through holes in the lip |
-| Board tray | `tray_*` | 6 pieces. Rests on the lid back, screwed into the old hinge holes. Carries the board standoffs (M2 inserts) |
+| Board tray | `tray_*` | 6 pieces. Covers the lid back up to its edge; the shell rim clamps its edge onto the lid (no screws). Carries the board standoffs (M2 inserts) |
 | Air gap, board + stock heatsink/blowers | — | Board top side faces the lid, heatsink side faces the back |
 | Back shell | `shell_*` | 6 pieces, printed back face down. Two 120 mm fan grilles, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, a window for the stock DC-in jack in the back plate, top/bottom vents. No board port cutouts: only DC-in is used |
 
