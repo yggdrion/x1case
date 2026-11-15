@@ -70,7 +70,7 @@ Blowers (24–26) and fin-stack exhausts (27, 28). The edge with the fin stacks 
 | left | 56 | 88 | 41 | 34 | 72 |
 | right | 290 | 90 | 41 | 250 | 66 |
 
-`blowers`, `fin_exhausts`. The 120 mm fan sits on the blower picked by `fan_blower`.
+`blowers`, `fin_exhausts`. The two 120 mm fans sit side by side over the heatpipe (`fan_y`).
 
 If the board isn't a plain rectangle, add a photo taken straight from above with a ruler next to it.
 
