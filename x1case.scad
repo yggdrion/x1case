@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_rb, frame_rt, tray_lb, tray_lt, tray_mb, tray_mt, tray_rb, tray_rt, shell_lb, shell_lt, shell_mb, shell_mt, shell_rb, shell_rt, hood, test_corner, test_seam, test_holes_l, test_holes_r]
+part = "assembly"; // [assembly, frame_lb, frame_lt, frame_mb, frame_mt, frame_rb, frame_rt, tray_lb, tray_lt, tray_mb, tray_mt, tray_rb, tray_rt, shell_lb, shell_lt, shell_mb, shell_mt, shell_rb, shell_rt, test_corner, test_seam, test_holes_l, test_holes_r]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -29,9 +29,7 @@ lip_w_bottom = 14;  // bottom lip: covers the open strip with the antennas and c
 // Hinge stubs: fixed to the lid (no screw), stick out on the glass side inside the bottom strip.
 // [x from the lid's left edge, width, height up from the bottom edge]; the right one mirrors at 44 mm from the right edge.
 stubs = [[44, 6, 8], [361 - 44 - 6, 6, 8]];
-stub_out = 12;      // how far a stub sticks out past the glass (measured)
 stub_clear = 0.5;   // gap around a stub, per side
-hood_wall = 1.6;    // stub hood: printed separately, glued on the front over the hole in the lip
 fit = 0.3;          // lid clearance per side
 // Cable bundle (eDP, touch, webcam, Wi-Fi) leaving the lid's bottom edge at the old hinge gap
 // x = 0 is the lid edge that sits on the right when you look at the glass (test_corner fit check: the cable sits ~70 mm from that corner)
@@ -270,7 +268,7 @@ module frame_full() {
     // window: lip_w on three sides, lip_w_bottom along the hinge edge
     translate([lx0 + lid_w / 2, ly0 + (lip_w_bottom + lid_h - lip_w) / 2, -1]) linear_extrude(lip_t + 2)
       rrect(lid_w - 2 * lip_w, lid_h - lip_w - lip_w_bottom, max(lid_r - lip_w, 1));
-    // hinge stubs poke through the lip; a glued-on hood covers each one
+    // hinge stubs poke through the lip (open hole, cut the stubs off later)
     for (t = stubs) translate([lx0 + t[0] - stub_clear, ly0 - fit, -1]) cube([t[1] + 2 * stub_clear, t[2] + fit + stub_clear, lip_t + 2]);
     for (c = cable_x) translate([c[0], ly0 - fit - cable_d, lip_t]) cube([c[1] - c[0], cable_d + fit + 1, zb]);
     for (p = screw_pts) translate([p[0], p[1], zb - screw_pilot_depth]) cylinder(d = screw_pilot_d, h = screw_pilot_depth + 1);
@@ -386,7 +384,6 @@ module assembly() {
     color("Silver") translate([0, 0, explode * 0.5]) split(i, j, tray_tabs, plate_htabs) tray_full();
     color(cols[i], 0.9) translate([0, 0, explode]) split(i, j, shell_tabs, plate_htabs) shell_clipped();
   }
-  for (t = stubs) color(cols[0]) translate([lx0 + t[0] - stub_clear - hood_wall, ly0 - fit - hood_wall, 0]) mirror([0, 0, 1]) hood(t);
   if (show_ghosts) ghosts();
 }
 
@@ -430,20 +427,7 @@ module test_holes(k) {
   }
 }
 
-// ---------------------------------------------------------------- stub hood
-// Box over a hinge stub, open toward the frame; print open side down, glue on the front of the bottom lip.
-module hood(t) {
-  iw = t[1] + 2 * stub_clear;
-  ih = t[2] + fit + stub_clear;
-  d = stub_out - lip_t + stub_clear;
-  difference() {
-    cube([iw + 2 * hood_wall, ih + 2 * hood_wall, d + hood_wall]);
-    translate([hood_wall, hood_wall, -1]) cube([iw, ih, d + 1]);
-  }
-}
-
 if (part == "assembly") assembly();
-else if (part == "hood") hood(stubs[0]); // print 2
 else if (part == "test_holes_l") test_holes(0);
 else if (part == "test_holes_r") test_holes(1);
 else if (part == "test_corner") test_corner();
