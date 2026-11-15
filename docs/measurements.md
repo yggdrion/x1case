@@ -10,7 +10,7 @@ Order: lid first (1–18) unblocks the `test_corner` print. Board and cooler (19
 |---|---|---|---|
 | 1 | Lid width, outer edge to outer edge | `lid_w` | 361 |
 | 2 | Lid height, outer edge to outer edge (hinge stubs not included) | `lid_h` | 245 |
-| 3 | Corner radius, seen from the front | `lid_r` | |
+| 3 | Corner radius, seen from the front | `lid_r` | 3 (guessed small on purpose) |
 | 4 | Bezel left: lid edge to first lit pixel | `bezel[0]` | 8.8 |
 | 5 | Bezel right | `bezel[1]` | 8 |
 | 6 | Bezel top | `bezel[2]` | 14 |
@@ -57,13 +57,18 @@ Board holes (21–23), one row per hole:
 | H5 | 175 | 18 | M2 |
 | H6 | 242 | 3.5 | M2 |
 | H7 | 127 | 3.5 | M2 |
+| H8 | 349 | 15 | M2 |
+| H9 | 352 | 47 | M2 |
+| H10 | 350 | 75 | M2 |
+| H11 | 353 | 94 | M2 |
+| H12 | 343 | 103 | M2 |
 
 Blowers (24–26) and fin-stack exhausts (27, 28). The edge with the fin stacks is drawn at the top:
 
 | Blower | 24: intake centre x | 25: intake centre y | 26: intake diameter | 27: fin exhaust start x | 28: fin exhaust width |
 |---|---|---|---|---|---|
-| left | 56 | 88 | 41 | | |
-| right | 288 | ? | 41? | | |
+| left | 56 | 88 | 41 | 34 | 72 |
+| right | 290 | 90 | 41 | 250 | 66 |
 
 `blowers`, `fin_exhausts`. The 120 mm fan sits on the blower picked by `fan_blower`.
 
@@ -73,9 +78,9 @@ If the board isn't a plain rectangle, add a photo taken straight from above with
 
 | # | What | Parameter | Value |
 |---|---|---|---|
-| 33 | Jack body width (plug side) | `dc_jack[0]` | |
-| 34 | Jack body height | `dc_jack[1]` | |
-| 35 | Jack body length | `dc_jack[2]` | |
+| 33 | Jack body width (plug side) | `dc_window` | not needed: hot-glued in a window |
+| 34 | Jack body height | — | not needed |
+| 35 | Jack body length | — | not needed |
 | 36 | Cable length, jack to board connector | — | very short: the jack can't move, it points out the back |
 
 Add a photo of how the jack was held in the laptop (bracket, screw).
