@@ -15,7 +15,7 @@ Order: lid first (1–18) unblocks the `test_corner` print. Board and cooler (19
 | 5 | Bezel right | `bezel[1]` | 8 |
 | 6 | Bezel top | `bezel[2]` | 14 |
 | 7 | Bezel bottom | `bezel[3]` | 37 |
-| 11 | Cable exit: start x from 0,0 | `cable_exits` | ~100 from the left edge, ~60 from the right edge (two exits) |
+| 11 | Cable exit: start x from 0,0 | `cable_exits` | two exits, centred ~70 mm from the right edge and ~100 mm from the left edge (looking at the glass; checked with `test_corner`) |
 | 12 | Cable exit: width | `cable_exits` | round cables only, no ribbon: 15 mm channel |
 | 16 | Thickness at the thickest point | `lid_t` | 6.7–7 (flat) |
 | 17 | Thickness 3 mm in from the edge (left / right / top / bottom) | `lid_t_edge` | 7 |

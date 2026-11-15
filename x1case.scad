@@ -34,7 +34,8 @@ stub_clear = 0.5;   // gap around a stub, per side
 hood_wall = 1.6;    // stub hood: printed separately, glued on the front over the hole in the lip
 fit = 0.3;          // lid clearance per side
 // Cable bundle (eDP, touch, webcam, Wi-Fi) leaving the lid's bottom edge at the old hinge gap
-cable_exits = [[92.5, 15], [282.5, 15]]; // [start x from the lid's left edge, width]: centred ~100 mm from the left, ~60 mm from the right (measured); round cables only, no ribbon
+// x = 0 is the lid edge that sits on the right when you look at the glass (test_corner fit check: the cable sits ~70 mm from that corner)
+cable_exits = [[63.5, 15], [253.5, 15]]; // [start x, width]: centred ~70 mm and ~100 mm from the x = 0 edge (measured); round cables only, no ribbon
 cable_d = 4.5;            // channel depth below the lid edge, inside the bottom clamp wall
 
 /* [Case] */
