@@ -39,10 +39,15 @@ M = {
     "alu": mat("alu", (0.75, 0.75, 0.78), 0.3, 0.9),
     "copper": mat("copper", (0.8, 0.4, 0.2), 0.3, 1.0),
     "fan": mat("fan", (0.05, 0.05, 0.05), 0.5),
+    "esp": mat("esp", (0.05, 0.12, 0.45), 0.4),
+    "buck": mat("buck", (0.03, 0.25, 0.12), 0.4),
+    "steel": mat("steel", (0.7, 0.7, 0.72), 0.25, 1.0),
+    "brick": mat("brick", (0.02, 0.02, 0.02), 0.55),
 }
 
 # name: (material, explode offset along scad +Z in mm)
 ex = view == "back"
+ee = 130 if ex else 0  # electronics explode offset, mm
 parts = {
     "frame": ("frame", 0), "lid": ("lid", 0), "screen": ("screen", 0),
     "tray": ("tray", 40 if ex else 0),
@@ -50,6 +55,8 @@ parts = {
     "blowers": ("dark", 90 if ex else 0), "fins": ("alu", 90 if ex else 0), "pipe": ("copper", 90 if ex else 0),
     "fans": ("fan", 150 if ex else 0), "blades": ("fan", 150 if ex else 0),
     "shell": ("case", 210 if ex else 0),
+    # electronics bay + DC jack sit in the shell; exploded on their own layer so the shell doesn't hide them
+    "esp": ("esp", ee), "bucks": ("buck", ee), "usbc": ("steel", ee), "parts": ("dark", ee),
 }
 for n, (m, dz) in parts.items():
     bpy.ops.wm.stl_import(filepath=os.path.join(D, n + ".stl"))
@@ -64,11 +71,32 @@ for n, (m, dz) in parts.items():
 
 bpy.context.view_layer.update()
 # case centre in world coords
-cx, cy, cz = 0.185, -0.03 - (0.1 if ex else 0), 0.129
+cx, cy, cz = 0.185, -0.03 - (0.1 if ex else 0), 0.06  # low enough to frame the brick on the floor
 
-# floor
-bpy.ops.mesh.primitive_plane_add(size=10, location=(cx, cy, 0.0))
+# floor below the case (it hangs on its VESA mount), so the plug and the brick fit underneath
+fz = -0.16
+bpy.ops.mesh.primitive_plane_add(size=10, location=(cx, cy, fz))
 bpy.context.object.data.materials.append(mat("floor", (0.8, 0.8, 0.82), 0.9))
+
+# power brick on the floor (PLACEHOLDER ~156 x 75 x 25 mm, Lenovo 135 W slim tip) + cable to the DC plug
+by = -0.05 - ee / 1000
+bpy.ops.mesh.primitive_cube_add(size=1, location=(0.17, by, fz + 0.0125))
+b = bpy.context.object
+b.scale = (0.156, 0.075, 0.025)
+b.data.materials.append(M["brick"])
+bv = b.modifiers.new("bevel", "BEVEL")
+bv.width, bv.segments = 0.004, 4
+cu = bpy.data.curves.new("cable", "CURVE")
+cu.dimensions, cu.bevel_depth = "3D", 0.0018
+sp = cu.splines.new("BEZIER")
+sp.bezier_points.add(2)
+plug_y = -0.022 - ee / 1000  # plug end, world coords (dc_x = 37.8 mm)
+for p, co in zip(sp.bezier_points, [(0.0378, plug_y, -0.014), (0.06, plug_y + 0.022, -0.13), (0.092, by, fz + 0.0125)]):
+    p.co = co
+    p.handle_left_type = p.handle_right_type = "AUTO"
+cable = bpy.data.objects.new("cable", cu)
+sc.collection.objects.link(cable)
+cable.data.materials.append(mat("cable", (0.015, 0.015, 0.015), 0.5))
 
 tgt = bpy.data.objects.new("tgt", None)
 tgt.location = (cx, cy, cz)

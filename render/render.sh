@@ -8,7 +8,7 @@ OS="${OPENSCAD:-/c/Program Files/OpenSCAD/openscad.exe}"
 BL="${BLENDER:-/c/Program Files/Blender Foundation/Blender 5.3/blender.exe}"
 mkdir -p out
 for l in frame tray shell; do "$OS" -o out/$l.stl -D "layer=\"$l\"" layer.scad 2>&1 | grep -E 'WARN|ERR' || true & done
-for w in lid screen board blowers fins pipe chips fans blades; do "$OS" -o out/$w.stl -D "which=\"$w\"" extras.scad 2>&1 | grep -E 'WARN|ERR' || true & done
+for w in lid screen board blowers fins pipe chips fans blades esp bucks usbc parts; do "$OS" -o out/$w.stl -D "which=\"$w\"" extras.scad 2>&1 | grep -E 'WARN|ERR' || true & done
 wait
 "$BL" -b --factory-startup -P scene.py -- front "$PWD/../images/render_front.png" | grep -E 'Saved|Error'
 "$BL" -b --factory-startup -P scene.py -- back "$PWD/../images/render_exploded.png" | grep -E 'Saved|Error'
