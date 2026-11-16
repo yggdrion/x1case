@@ -76,7 +76,7 @@ blowers = [[56, 88, 41], [290, 90, 41]]; // measured
 // Fin-stack exhausts on the fin edge: [start x, width]. Flipped, they blow down into the bottom vents.
 fin_exhausts = [[34, 72], [250, 66]];    // measured
 heatsink_h = 10;          // tallest part on the back side: blowers, ~10 mm (measured)
-comp_h = 5;               // PLACEHOLDER tallest other part on the back side (RAM, SSD)
+comp_h = 5;               // tallest other part on the back side (RAM, SSD): lower than the blowers (checked)
 // Stock DC-in jack: on a short cable next to a fin stack, so with the board flipped it sits at the bottom edge.
 // It points down through an oversized window in the shell's bottom wall (brick stays outside the case);
 // fix the jack in the window with hot glue.

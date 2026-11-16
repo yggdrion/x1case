@@ -43,7 +43,7 @@ Hinge stubs (13–15, 18). They stick out on the glass side and stay on (no scre
 | 20 | Board height | `board_h` | 138 |
 | 29 | Board thickness | `board_t` | |
 | 30 | Blowers + heatpipes: height above the board | `heatsink_h` | ~10 (others guessed, with room to spare) |
-| 31 | Tallest other part on the heatsink side (RAM, SSD) | `comp_h` | |
+| 31 | Tallest other part on the heatsink side (RAM, SSD) | `comp_h` | lower than the blowers: the blowers are the tallest part |
 | 32 | Tallest part on the screen side | `gap` | |
 
 Board holes (21–23): not used. The standoffs are screwed to the board and glued to the tray, so their positions don't matter. Kept for reference:
@@ -89,5 +89,5 @@ Add a photo of how the jack was held in the laptop (bracket, screw).
 
 | # | What | Value |
 |---|---|---|
-| 37 | eDP cable length, connector to connector (laid flat) | |
-| 38 | Wi-Fi antenna cable lengths, from the M.2 card | |
+| 37 | eDP cable length, connector to connector (laid flat) | ~120 |
+| 38 | Wi-Fi antenna cable lengths, from the M.2 card | ~150 |
