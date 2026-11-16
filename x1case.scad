@@ -47,12 +47,17 @@ back_t = 2.5;       // back shell rear plate
 rim_t = 5;          // shell front rim; its underside is recessed tray_t deep where the tray edge sits
 rim_over = 6;       // how far the rim reaches over the lid's back edge: presses the tray edge onto the lid
 tray_inset = 0.5;   // tray outline inside the lid outline
+tray_press = 0.3;   // shell recess this much shallower than the tray: the shell squeezes the tray onto the lid (lid measured 6.7-7)
+top_t = 5;          // thin upper shell: depth behind the lid back (tray recess + 3 mm plate); above hseam only the lid is behind it
+top_screw_floor = 2; // counterbore floor in the thin upper shell: M2 x 8 there (M2 x 12 in the deep part)
+// Tray tape, board side, inside the board footprint only (no clamp surface there): aluminium tape (~0.1) with Kapton (~0.06) over it so the board can't short on the foil
+tape_t = 0.2;
 tol = 0.2;          // dovetail glue gap (total)
 
 /* [Split: seams must avoid the fans, VESA bosses and cable channel] */
 seams = [125.65];          // one real seam (X position), glued dovetails: in the gap between the left fan and the VESA pad
 seam_clear = 2;            // min. distance from a seam to a fan frame or the VESA pad
-hseam = 137;             // horizontal seam (Y position): above the fans and the VESA pad
+hseam = 156;             // horizontal seam (Y position) = the shell step: deep box below (board, cooler, fans, VESA), thin plate above
 fake_grooves = true;      // mirrored decorative groove on the right, between the VESA pad and the right fan
 groove_w = 1.2;           // V-groove width at the surface
 
@@ -110,11 +115,10 @@ screw_head = 4.4;
 screw_pilot_d = 1.8;      // pilot hole in the frame wall
 screw_pilot_depth = 6.5;
 
-/* [Electronics bay, top right] */
-esp_size = [23.5, 18.5];  // ESP32-C3 SuperMini, USB-C toward the right wall
-esp_y = 175;
+/* [Electronics bay: inside the VESA square, one row: ESP32, buck, buck] */
+esp_size = [23.5, 18.5];  // ESP32-C3 SuperMini, flashed over the air (no wall port: the VESA plate covers it)
 buck_size = [22, 17];     // MP1584-style buck, x2 (12 V fan, 5 V ESP32)
-buck_y = [205, 230];      // above the ESP32, below the top wall
+elec_gap = 5;             // between the cradles
 cradle_wall = 1.6;
 cradle_h = 4;
 
@@ -156,6 +160,10 @@ bounds = concat([0], seams, [W]);
 fan_cs = [for (k = [-1, 1]) [W / 2 + k * (W / 2 - shell_wall - fan_size / 2), fan_y]];
 // VESA pad between the fans, same height
 vesa_c = [W / 2, fan_y];
+// electronics row centred in the VESA square: [x, y] of each cradle's inner corner
+elec_w = esp_size[0] + 2 * buck_size[0] + 2 * elec_gap;
+esp_pos = [vesa_c[0] - elec_w / 2, vesa_c[1] - esp_size[1] / 2];
+buck_pos = [for (k = [0, 1]) [esp_pos[0] + esp_size[0] + elec_gap + k * (buck_size[0] + elec_gap), vesa_c[1] - buck_size[1] / 2]];
 groove_x = fake_grooves ? concat(seams, [for (s = seams) W - s]) : seams;
 
 screw_x = [for (i = [0 : len(bounds) - 2]) each [bounds[i] + screw_inset, bounds[i + 1] - screw_inset]];
@@ -175,6 +183,7 @@ tray_tabs = [[ly0 + lid_h * 0.12, 6, 10, 5], [ly0 + lid_h * 0.5, 6, 10, 5],
 rows = [0, hseam, H];
 frame_htabs = [[clamp_wall / 2, 2, 3.5, 3], [W - clamp_wall / 2, 2, 3.5, 3]];
 plate_htabs = [for (i = [0 : len(bounds) - 2]) let(c = (bounds[i] + bounds[i + 1]) / 2) each [[c - 25, 6, 10, 5], [c + 25, 6, 10, 5]]];
+shell_htabs = []; // shell: butt joint at the step, glued; the thin top pieces are held by their own screws into the frame
 
 // ---------------------------------------------------------------- checks
 function rects_overlap(a, b) = a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3];
@@ -190,8 +199,10 @@ for (i = [0 : len(bounds) - 2], j = [0, 1]) {
 }
 for (f = fan_rects) if (hseam > f[1] - 3 && hseam < f[1] + fan_size + 3) echo("WARNING: horizontal seam cuts a fan");
 if (hseam > vesa_rect[1] - 3 && hseam < vesa_rect[1] + vesa_rect[3] + 3) echo("WARNING: horizontal seam cuts the VESA pad");
-if (hseam < esp_y + esp_size[1] + cradle_wall + 2 && hseam > esp_y - cradle_wall - 2) echo("WARNING: horizontal seam cuts the ESP32 cradle");
-for (y = buck_y) if (hseam + 6 > y - cradle_wall && hseam < y + buck_size[1] + cradle_wall) echo("WARNING: horizontal seam tabs hit a buck cradle");
+if (hseam - shell_wall < board_pos[1] + board_h + 2) echo("WARNING: shell step (hseam) is too low for the board");
+if (elec_w + 2 * cradle_wall > vesa - rib_t - 2 || max(esp_size[1], buck_size[1]) + 2 * cradle_wall > vesa - rib_t - 2) echo("WARNING: electronics row does not fit inside the VESA square");
+if (tape_t > gap - 1) echo("WARNING: tray tape eats the air gap under the board");
+echo(str("Board air gap over the taped tray = ", gap - tape_t, " mm; tray squeeze = ", tray_press, " mm (", round(100 * (tray_press - (lid_t_edge - 6.7))) / 100, " mm on a 6.7 mm lid)"));
 for (f = fan_rects) {
   if (f[0] < shell_wall || f[1] < shell_wall || f[0] + fan_size > W - shell_wall || f[1] + fan_size > H - shell_wall)
     echo("WARNING: a fan does not fit inside the shell walls");
@@ -217,17 +228,21 @@ module rrect(w, h, r) {
 // V-grooves on the front, back, top and bottom faces
 module grooves() {
   s = groove_w / sqrt(2);
+  zt = zb + top_t; // back face of the thin upper shell
   for (x = groove_x) {
     translate([x, H / 2, 0]) rotate([0, 45, 0]) cube([s, H + 2, s], center = true);
-    // back face: stop short of the fan grille
+    // back face of the deep part: stop short of the fan grille
     hit = [for (c = fan_cs) if (x > c[0] - fan_size / 2 && x < c[0] + fan_size / 2) c];
     if (len(hit) > 0) {
-      for (seg = [[-1, hit[0][1] - fan_size / 2], [hit[0][1] + fan_size / 2, H + 1]])
+      for (seg = [[-1, hit[0][1] - fan_size / 2], [hit[0][1] + fan_size / 2, hseam + 1]])
         translate([x, (seg[0] + seg[1]) / 2, D]) rotate([0, 45, 0]) cube([s, seg[1] - seg[0], s], center = true);
-    } else translate([x, H / 2, D]) rotate([0, 45, 0]) cube([s, H + 2, s], center = true);
-    for (y = [0, H]) translate([x, y, D / 2]) rotate([0, 0, 45]) cube([s, s, D + 2], center = true);
+    } else translate([x, hseam / 2, D]) rotate([0, 45, 0]) cube([s, hseam + 2, s], center = true);
+    translate([x, (hseam + H) / 2, zt]) rotate([0, 45, 0]) cube([s, H - hseam + 2, s], center = true); // thin part's back face
+    translate([x, 0, D / 2]) rotate([0, 0, 45]) cube([s, s, D + 2], center = true);
+    translate([x, H, zt / 2]) rotate([0, 0, 45]) cube([s, s, zt + 2], center = true);
+    translate([x, hseam, (zt + D) / 2]) rotate([0, 0, 45]) cube([s, s, D - zt + 2], center = true); // step's top face
   }
-  // horizontal seam: front, back and both side faces (no mirrored fake, it would cross the fan)
+  // horizontal seam: front face, step edge and both side faces (no mirrored fake, it would cross the fan)
   for (z = [0, D]) translate([W / 2, hseam, z]) rotate([45, 0, 0]) cube([W + 2, s, s], center = true);
   for (x = [0, W]) translate([x, hseam, D / 2]) rotate([0, 0, 45]) cube([s, s, D + 2], center = true);
 }
@@ -306,13 +321,18 @@ module port_cut(p) {
     rrect(p[4] + 2 * port_clear, p[3] + 2 * port_clear, 1);
 }
 
+// outer envelope: deep box up to the step (hseam), thin plate above it
+module shell_env() {
+  translate([0, 0, zb]) cube([W, hseam, D - zb]);
+  translate([0, hseam - 0.01, zb]) cube([W, H - hseam + 0.01, top_t]);
+}
+
 module shell_full() {
-  esp_x = W - shell_wall - esp_size[0];
   difference() {
     union() {
       difference() {
-        translate([0, 0, zb]) cube([W, H, D - zb]);
-        translate([shell_wall, shell_wall, zb - 1]) cube([W - 2 * shell_wall, H - 2 * shell_wall, z_in - zb + 1]);
+        shell_env();
+        translate([shell_wall, shell_wall, zb - 1]) cube([W - 2 * shell_wall, hseam - 2 * shell_wall, z_in - zb + 1]);
       }
       // front rim, clamps the lid's back edge (cable channel left open)
       translate([0, 0, zb]) difference() {
@@ -325,14 +345,14 @@ module shell_full() {
       for (dx = [-1, 1], dy = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2, vesa_c[1] + dy * vesa / 2, z_in - vesa_boss_h]) cylinder(d = vesa_boss_d, h = vesa_boss_h + 0.01);
       for (dx = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2 - rib_t / 2, vesa_c[1] - vesa / 2, z_in - rib_h]) cube([rib_t, vesa, rib_h + 0.01]);
       for (dy = [-1, 1]) translate([vesa_c[0] - vesa / 2, vesa_c[1] + dy * vesa / 2 - rib_t / 2, z_in - rib_h]) cube([vesa, rib_t, rib_h + 0.01]);
-      // electronics cradles
-      translate([esp_x, esp_y, z_in + 0.01]) cradle(esp_size, true);
-      for (y = buck_y) translate([W - shell_wall - cradle_wall - buck_size[0] - 2, y, z_in + 0.01]) cradle(buck_size, false);
+      // electronics cradles, inside the VESA square
+      translate([esp_pos[0], esp_pos[1], z_in + 0.01]) cradle(esp_size, true);
+      for (b = buck_pos) translate([b[0], b[1], z_in + 0.01]) cradle(buck_size, false);
     }
-    // shell screws: clearance + counterbore from the back
+    // shell screws: clearance + counterbore from the back (shallower in the thin upper part)
     for (p = screw_pts) {
       translate([p[0], p[1], zb - 1]) cylinder(d = screw_clear, h = D);
-      translate([p[0], p[1], zb + screw_floor]) cylinder(d = screw_head, h = D);
+      translate([p[0], p[1], zb + (p[1] > hseam ? top_screw_floor : screw_floor)]) cylinder(d = screw_head, h = D);
     }
     // VESA inserts from the back
     for (dx = [-1, 1], dy = [-1, 1]) translate([vesa_c[0] + dx * vesa / 2, vesa_c[1] + dy * vesa / 2, D - vesa_insert_depth]) cylinder(d = vesa_insert_d, h = vesa_insert_depth + 1);
@@ -342,26 +362,25 @@ module shell_full() {
       for (a = [0, 90]) rotate(a + 45) square([fan_size, 4], center = true);
     }
     for (c = fan_cs, dx = [-1, 1], dy = [-1, 1]) translate([c[0] + dx * fan_hole_pitch / 2, c[1] + dy * fan_hole_pitch / 2, z_in - 1]) cylinder(d = fan_hole_d, h = back_t + 2);
-    // vents: bottom = fin-stack exhaust (board flipped), top = chimney
+    // vents: bottom = fin-stack exhaust (board flipped), top = chimney through the step
     for (x = [vent_end : vent_pitch : W - vent_end])
       if (min([for (s = concat(screw_x, seams)) abs(x - s)]) > boss_d / 2 + 2)
-        for (y = [-1, H - shell_wall - 1]) if (y > 0 || abs(x - dc_x) > dc_cut[0] / 2 + vent_w)
+        for (y = [-1, hseam - shell_wall - 1]) if (y > 0 || abs(x - dc_x) > dc_cut[0] / 2 + vent_w)
           let(vw = y < 0 && len([for (f = fins_g) if (x > f[0] - 2 && x < f[0] + f[1] + 2) 1]) > 0 ? vent_w_fin : vent_w)
             translate([x - vw / 2, y, zb + rim_t + 2]) cube([vw, shell_wall + 2, z_in - zb - rim_t - 4]);
-    // optional side ports, ESP32 USB-C, DC jack
+    // optional side ports
     for (p = ports) port_cut(p);
-    translate([W - shell_wall - 1, esp_y + esp_size[1] / 2, z_in - 3.2]) rotate([0, 90, 0]) linear_extrude(shell_wall + 2) rrect(4.5, 10, 1.5);
     // stock DC-in jack: oversized window in the bottom wall, jack hot-glued in place
     translate([dc_x, -1, zb + rim_t + dc_cut[1] / 2]) rotate([-90, 0, 0]) linear_extrude(shell_wall + 2) rrect(dc_cut[0], dc_cut[1], 3);
-    // recess for the tray edge: the rim presses the tray onto the lid
-    translate([0, 0, zb - 1]) linear_extrude(tray_t + 1) lid2d(-tray_inset + 0.3);
+    // recess for the tray: tray_press shallower than the tray, so the rim and the thin upper plate squeeze it onto the lid
+    translate([0, 0, zb - 1]) linear_extrude(tray_t - tray_press + 1) lid2d(-tray_inset + 0.3);
     // rim stays out of the board footprint: the glued standoffs can sit anywhere under the board
     translate([board_pos[0], board_pos[1], zb - 1]) cube([board_w, board_h, rim_t + 2]);
     grooves();
   }
 }
 
-module shell_clipped() intersection() { shell_full(); cube([W, H, D]); }
+module shell_clipped() intersection() { shell_full(); shell_env(); }
 
 // ---------------------------------------------------------------- ghosts
 module ghosts() {
@@ -369,7 +388,8 @@ module ghosts() {
   %translate([board_pos[0], board_pos[1], z_board]) cube([board_w, board_h, board_t]);
   for (b = blowers_g) %translate([b[0], b[1], z_board_back]) cylinder(d = b[2] + 10, h = heatsink_h);
   for (f = fan_rects) %translate([f[0], f[1], z_in - fan_t]) cube([fan_size, fan_size, fan_t]);
-  %translate([W - shell_wall - esp_size[0], esp_y, z_in - 1.6]) cube([esp_size[0], esp_size[1], 1.6]);
+  %translate([esp_pos[0], esp_pos[1], z_in - 1.6]) cube([esp_size[0], esp_size[1], 1.6]);
+  for (b = buck_pos) %translate([b[0], b[1], z_in - 1.6]) cube([buck_size[0], buck_size[1], 1.6]);
 }
 
 // ---------------------------------------------------------------- parts
@@ -378,14 +398,14 @@ function idx(s) = [for (k = [0 : len(names) - 1]) if (names[k] == s) k][0];
 
 module print_frame(i, j) translate([-bounds[i], -rows[j], 0]) split(i, j, frame_tabs, frame_htabs) frame_full();
 module print_tray(i, j) translate([-bounds[i], -rows[j], -z_tray]) split(i, j, tray_tabs, plate_htabs) tray_full();
-module print_shell(i, j) translate([-bounds[i], -rows[j], D]) mirror([0, 0, 1]) split(i, j, shell_tabs, plate_htabs) shell_clipped();
+module print_shell(i, j) translate([-bounds[i], -rows[j], j == 1 ? zb + top_t : D]) mirror([0, 0, 1]) split(i, j, shell_tabs, shell_htabs) shell_clipped();
 
 module assembly() {
   cols = ["SteelBlue", "LightSteelBlue", "SteelBlue"];
   for (i = [0 : len(bounds) - 2], j = [0, 1]) {
     color(cols[i]) split(i, j, frame_tabs, frame_htabs) frame_full();
     color("Silver") translate([0, 0, explode * 0.5]) split(i, j, tray_tabs, plate_htabs) tray_full();
-    color(cols[i], 0.9) translate([0, 0, explode]) split(i, j, shell_tabs, plate_htabs) shell_clipped();
+    color(cols[i], 0.9) translate([0, 0, explode]) split(i, j, shell_tabs, shell_htabs) shell_clipped();
   }
   if (show_ghosts) ghosts();
 }
@@ -403,7 +423,7 @@ module test_seam() {
   b = [seams[0] - 20, 0, 40, 40];
   for (i = [0, 1]) translate([-b[0] + i * 10, 0, 0]) {
     test_cut(b) split(i, 0, frame_tabs, frame_htabs) frame_full();
-    translate([0, b[3] + 10, D]) mirror([0, 0, 1]) test_cut(b) split(i, 0, shell_tabs, plate_htabs) shell_clipped();
+    translate([0, b[3] + 10, D]) mirror([0, 0, 1]) test_cut(b) split(i, 0, shell_tabs, shell_htabs) shell_clipped();
   }
 }
 
