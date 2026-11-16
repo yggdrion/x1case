@@ -43,6 +43,9 @@ M = {
     "buck": mat("buck", (0.03, 0.25, 0.12), 0.4),
     "steel": mat("steel", (0.7, 0.7, 0.72), 0.25, 1.0),
     "brick": mat("brick", (0.02, 0.02, 0.02), 0.55),
+    "brass": mat("brass", (0.8, 0.6, 0.25), 0.3, 1.0),
+    "kapton": mat("kapton", (0.75, 0.38, 0.05), 0.25),
+    "cable": mat("cable", (0.015, 0.015, 0.015), 0.5),
 }
 
 # name: (material, explode offset along scad +Z in mm)
@@ -57,7 +60,12 @@ parts = {
     "shell": ("case", 210 if ex else 0),
     # electronics bay + DC jack sit in the shell; exploded on their own layer so the shell doesn't hide them
     "esp": ("esp", ee), "bucks": ("buck", ee), "usbc": ("steel", ee), "parts": ("dark", ee),
+    "tape": ("alu", 40 if ex else 0), "kapton": ("kapton", 40 if ex else 0), "standoffs": ("brass", 40 if ex else 0),
+    "screws": ("steel", 210 if ex else 0), "inserts": ("brass", 210 if ex else 0), "cables": ("cable", 0),
 }
+if view == "inside":  # back view with the shell (and what is fixed in it but the electronics) left out
+    for n in ("shell", "screws", "inserts"):
+        del parts[n]
 for n, (m, dz) in parts.items():
     bpy.ops.wm.stl_import(filepath=os.path.join(D, n + ".stl"))
     o = bpy.context.selected_objects[0]
@@ -71,7 +79,7 @@ for n, (m, dz) in parts.items():
 
 bpy.context.view_layer.update()
 # case centre in world coords
-cx, cy, cz = 0.185, -0.03 - (0.1 if ex else 0), 0.06  # low enough to frame the brick on the floor
+cx, cy, cz = 0.185, -0.03 - (0.1 if ex else 0), 0.11 if view == "inside" else 0.06  # low enough to frame the brick on the floor
 
 # floor below the case (it hangs on its VESA mount), so the plug and the brick fit underneath
 fz = -0.16
@@ -96,7 +104,7 @@ for p, co in zip(sp.bezier_points, [(0.0378, plug_y, -0.014), (0.06, plug_y + 0.
     p.handle_left_type = p.handle_right_type = "AUTO"
 cable = bpy.data.objects.new("cable", cu)
 sc.collection.objects.link(cable)
-cable.data.materials.append(mat("cable", (0.015, 0.015, 0.015), 0.5))
+cable.data.materials.append(M["cable"])
 
 tgt = bpy.data.objects.new("tgt", None)
 tgt.location = (cx, cy, cz)
@@ -106,6 +114,8 @@ sc.collection.objects.link(cam)
 cam.data.lens = 62
 if view == "front":
     cam.location = (cx - 0.35, cy + 1.05, cz + 0.25)
+elif view == "inside":
+    cam.location = (cx + 0.35, cy - 0.85, cz + 0.45)
 else:
     cam.location = (cx + 1.1, cy - 0.6, cz + 0.3)
 c = cam.constraints.new("TRACK_TO")
