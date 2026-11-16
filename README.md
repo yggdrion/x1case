@@ -10,13 +10,13 @@ The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.
 
 | Layer | Part | Notes |
 |---|---|---|
-| Front clamp ring | `frame_*` | 4 pieces, printed front face down. A 3 mm lip over the lid's front edge, a 4.5 mm wall (7.5 mm at the bottom, with the cable channel) and pilot holes for the shell screws |
+| Front clamp ring | `frame_*` | 4 pieces, printed front face down. A 2 mm lip over the lid's front edge, a 6 mm wall (7.5 mm at the bottom, with the cable channel) and M2 heat-set inserts for the shell screws |
 | Display lid | — | Original. The hinge stubs stay on and stick out 12 mm past the glass; a 14 mm bottom lip covers the open strip along the hinge edge, with an open hole for each stub (cut the stubs off later) |
 | Board tray | `tray_*` | 4 pieces. Covers the lid back up to its edge; the shell squeezes it onto the lid (no screws). Flat: M2 × 5 mm brass standoffs (female-female) screw onto the board and get glued to the tray, so no hole positions need measuring. Aluminium tape with Kapton over it goes on the board side, inside the board footprint only (`tape_t`) |
 | Air gap, board + stock heatsink/blowers | — | Board top side faces the lid, heatsink side faces the back |
 | Back shell | `shell_*` | 4 pieces, printed back face down. Stepped: a deep box (57.7 mm) up to `hseam` over the board, cooler and fans, and a thin plate (`top_t`, 14 mm total) above it, where only the lid is behind. Two 120 mm fan grilles, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles inside the VESA square, a window for the stock DC-in jack in the bottom wall, bottom vents (wider at the fin-stack exhausts) and top vents in the step. No board port cutouts: only DC-in is used |
 
-The lid is a sandwich: frame lip, lid, tray, shell. The frame's pocket is exactly `lid_t_edge` deep, so the lid back sits flush with the frame back (0.3 mm below it on a 6.7 mm lid). The tray lies on the lid back, and the shell's tray recess is `tray_press` (0.3 mm) shallower than the tray, so the rim and the thin upper plate squeeze the tray onto the lid: 0.3 mm on a 7 mm lid, 0 on a 6.7 mm one. Nothing is glued to the lid. The shell screws pull it all together: M2 self-tapping (plastite style) from the back through counterbored bosses into pilot holes in the frame wall, M2 × 12 in the deep part and M2 × 8 in the thin upper part. The tray tape stays inside the board footprint, where the rim is cut out, so it never sits in the clamp stack; it only takes 0.2 mm off the 5 mm air gap under the board. The cable bundle leaves the lid's bottom edge at the old hinge gap, runs through a channel in the bottom wall and enters the shell through a gap in the rim.
+The lid is a sandwich: frame lip, lid, tray, shell. The frame's pocket is exactly `lid_t_edge` deep, so the lid back sits flush with the frame back (0.3 mm below it on a 6.7 mm lid). The tray lies on the lid back, and the shell's tray recess is `tray_press` (0.3 mm) shallower than the tray, so the rim and the thin upper plate squeeze the tray onto the lid: 0.3 mm on a 7 mm lid, 0 on a 6.7 mm one. Nothing is glued to the lid. The shell screws pull it all together: M2 machine screws (socket or button head) from the back through counterbored bosses into M2 × 4 heat-set inserts in the frame wall (3.2 mm hole, melted in from the frame's back face), M2 × 10 in the deep part and M2 × 6 in the thin upper part. The tray tape stays inside the board footprint, where the rim is cut out, so it never sits in the clamp stack; it only takes 0.2 mm off the 5 mm air gap under the board. The cable bundle leaves the lid's bottom edge at the old hinge gap, runs through a channel in the bottom wall and enters the shell through a gap in the rim.
 
 ## Split
 
@@ -53,9 +53,9 @@ See [docs/measure.png](docs/measure.png) (numbered drawing) and [docs/measuremen
 Small slices of the real parts, to check fit before printing full pieces:
 
 - `test_corner`: bottom-left frame corner (70 × 50 mm). Lay the lid corner in: check the fit gap, corner radius, lip over the bezel, and that the lid back sits flush with the frame back. Print after the lid is measured.
-- `test_seam`: frame + shell halves around the left seam, bottom wall. Check dovetail slide fit, the V-groove, and that an M2 × 12 plastite screw bites in the pilot hole. Independent of the measurements, so it can print now.
+- `test_seam`: frame + shell halves around the left seam, bottom wall. Check dovetail slide fit, the V-groove, and an M2 × 4 heat-set insert in its hole (melt it in, then screw in an M2 × 10). Independent of the measurements, so it can print now.
 
-Tune `fit`, `tol` and `screw_pilot_d` from the results.
+Tune `fit`, `tol` and `insert_d` from the results.
 
 ![test_seam](images/test_seam.png)
 

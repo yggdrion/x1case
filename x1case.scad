@@ -37,7 +37,7 @@ cable_exits = [[63.5, 15], [253.5, 15]]; // [start x, width]: centred ~70 mm and
 cable_d = 4.5;            // channel depth below the lid edge, inside the bottom clamp wall
 
 /* [Case] */
-clamp_wall = 4.5;         // clamp wall left, right and top (thin so the height fits the bed)
+clamp_wall = 6;           // clamp wall left, right and top: thick enough for an M2 heat-set insert (1.4 mm around the hole)
 clamp_wall_bottom = 7.5;  // bottom clamp wall, holds the cable channel
 lip_t = 2;          // front lip thickness
 tray_t = 2;         // board tray on the lid back
@@ -49,7 +49,7 @@ rim_over = 6;       // how far the rim reaches over the lid's back edge: presses
 tray_inset = 0.5;   // tray outline inside the lid outline
 tray_press = 0.3;   // shell recess this much shallower than the tray: the shell squeezes the tray onto the lid (lid measured 6.7-7)
 top_t = 5;          // thin upper shell: depth behind the lid back (tray recess + 3 mm plate); above hseam only the lid is behind it
-top_screw_floor = 2; // counterbore floor in the thin upper shell: M2 x 8 there (M2 x 12 in the deep part)
+top_screw_floor = 2; // counterbore floor in the thin upper shell: M2 x 6 there (M2 x 10 in the deep part)
 // Tray tape, board side, inside the board footprint only (no clamp surface there): aluminium tape (~0.1) with Kapton (~0.06) over it so the board can't short on the foil
 tape_t = 0.2;
 tol = 0.2;          // dovetail glue gap (total)
@@ -105,15 +105,15 @@ vesa_boss_h = 7;          // inside the shell, from the back plate
 rib_t = 3;
 rib_h = 6;
 
-/* [Shell screws: M2 x 12 self-tapping (plastite) into the clamp wall] */
+/* [Shell screws: M2 machine screws (socket or button head) into M2 heat-set inserts in the frame wall] */
 screw_inset = 15;         // from each piece's edges
 side_screw_y_rel = [0.65]; // side-wall screws as a fraction of H: above the fans, which sit against the side walls
 boss_d = 7;
 screw_floor = 6;          // material under the counterbore
 screw_clear = 2.4;
 screw_head = 4.4;
-screw_pilot_d = 1.8;      // pilot hole in the frame wall
-screw_pilot_depth = 6.5;
+insert_d = 3.2;           // M2 x 4 heat-set insert hole, melted in from the frame's back face
+insert_depth = 4.5;
 
 /* [Electronics bay: inside the VESA square, one row: ESP32, buck, buck] */
 esp_size = [23.5, 18.5];  // ESP32-C3 SuperMini, flashed over the air (no wall port: the VESA plate covers it)
@@ -295,7 +295,7 @@ module frame_full() {
     // hinge stubs poke through the lip (open hole, cut the stubs off later)
     for (t = stubs) translate([lx0 + t[0] - stub_clear, ly0 - fit, -1]) cube([t[1] + 2 * stub_clear, t[2] + fit + stub_clear, lip_t + 2]);
     for (c = cable_x) translate([c[0], ly0 - fit - cable_d, lip_t]) cube([c[1] - c[0], cable_d + fit + 1, zb]);
-    for (p = screw_pts) translate([p[0], p[1], zb - screw_pilot_depth]) cylinder(d = screw_pilot_d, h = screw_pilot_depth + 1);
+    for (p = screw_pts) translate([p[0], p[1], zb - insert_depth]) cylinder(d = insert_d, h = insert_depth + 1);
     grooves();
   }
 }
