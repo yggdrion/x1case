@@ -67,4 +67,8 @@ Requires OpenSCAD 2021.01+.
 openscad -o stl/shell_rb.stl -D 'part="shell_rb"' x1case.scad
 ```
 
+Photo renders (Blender 5.x, stand-in board, cooler and fans): `bash render/render.sh` writes `images/render_front.png` and `images/render_exploded.png`.
+
+![render](images/render_exploded.png)
+
 Parts: `frame|tray|shell` + `_` + column `l|r` + row `b|t` (e.g. `shell_lb`), `test_corner`, `test_seam`, plus `assembly` (with `explode` and `show_ghosts`).
