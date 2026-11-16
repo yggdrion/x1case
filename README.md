@@ -14,7 +14,7 @@ The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.
 | Display lid | — | Original. The hinge stubs stay on and stick out 12 mm past the glass; a 14 mm bottom lip covers the open strip along the hinge edge, with an open hole for each stub (cut the stubs off later) |
 | Board tray | `tray_*` | 4 pieces. Covers the lid back up to its edge; the shell rim clamps its edge onto the lid (no screws). Flat: M2 × 5 mm brass standoffs (female-female) screw onto the board and get glued to the tray, so no hole positions need measuring |
 | Air gap, board + stock heatsink/blowers | — | Board top side faces the lid, heatsink side faces the back |
-| Back shell | `shell_*` | 4 pieces, printed back face down. Two 120 mm fan grilles, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, a window for the stock DC-in jack in the back plate, top/bottom vents. No board port cutouts: only DC-in is used |
+| Back shell | `shell_*` | 4 pieces, printed back face down. Two 120 mm fan grilles, VESA 100 bosses with M4 inserts, ESP32 + 2× buck cradles, a window for the stock DC-in jack in the bottom wall, top/bottom vents (wider at the fin-stack exhausts). No board port cutouts: only DC-in is used |
 
 The shell's front rim presses on the lid's back edge, so the lid is clamped between the rim and the frame lip around its full outline. Shell screws (M2 × 12 self-tapping, plastite style) go in from the back through counterbored bosses into pilot holes in the frame wall. The cable bundle leaves the lid's bottom edge at the old hinge gap, runs through a channel in the bottom wall and enters the shell through a gap in the rim.
 
@@ -29,9 +29,9 @@ Glue each column's bottom and top piece first, then the columns together, so the
 
 ## Cooling and power
 
-- The stock cooler stays: one blower at each end of the board, heatpipes between, fin stacks on the board's top edge. The fin stacks blow up into the top vents.
+- The stock cooler stays: one blower at each end of the board, heatpipes between, fin stacks on one long edge. The board is turned 180° (`board_flip`) so the fin edge faces down, next to the lid's cable exits: shortest cable run to the display. The fin stacks blow down, about 9 mm, straight into wider bottom vents (`vent_w_fin`).
 - The board sits low (`board_bottom_gap`), close to the lid's cable exits. Two 120 mm × 25 mm fans (`fan_t = 15` for slim NF-A12x15s) sit against the side walls, low down (`fan_y`), each right over a blower intake. They pull air in through the back grilles and push fresh air into the blowers and over the board. The depth budget stacks the fans on the heatsink.
-- The stock DC-in jack sits on a short cable next to the right fin stack. It points out through an oversized window in the back plate and is hot-glued in place, so the original charger plugs in from behind; the brick stays outside the case because of its heat. Tap its two wires for the 12 V buck (fan) and the 5 V buck (ESP32).
+- The stock DC-in jack sits on a short cable next to a fin stack, so with the board flipped it ends up at the bottom edge. It points down through an oversized window in the bottom wall (`dc_cut`) and is hot-glued in place, so the original charger plugs in from below; the brick stays outside the case because of its heat. Tap its two wires for the 12 V buck (fan) and the 5 V buck (ESP32).
 - The ESP32-C3 SuperMini runs standalone. DS18B20 sensors on the heatsink, VRM area and exhaust set a firmware fan curve: 25 kHz PWM, tach read back, 100 % if a sensor fails. Its USB-C port is reachable through the right wall.
 
 ## Machine setup
@@ -46,7 +46,7 @@ See [docs/measure.png](docs/measure.png) (numbered drawing) and [docs/measuremen
 1. Lid outline, corner radius, thickness (thickest point and at the edge) and bezel widths (`lid_*`, `bezel`), old hinge holes and their thread (`lid_anchors`), hinge stubs, and cable exit (`cable_exit`)
 2. Board outline, mounting holes, blower intakes and fin-stack exhausts, heatsink height, tallest parts (`board_*`, `blowers`, `fin_exhausts`, `heatsink_h`, `comp_h`)
 3. eDP cable length, which limits how far `board_pos` can sit from the cable exit
-4. Nothing for the DC-in jack: it is hot-glued in an oversized back-plate window (`dc_window`)
+4. Nothing for the DC-in jack: it is hot-glued in an oversized bottom-wall window (`dc_cut`)
 
 ## Test prints
 

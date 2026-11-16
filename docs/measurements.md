@@ -63,7 +63,7 @@ Board holes (21–23): not used. The standoffs are screwed to the board and glue
 | H11 | 353 | 94 | M2 |
 | H12 | 343 | 103 | M2 |
 
-Blowers (24–26) and fin-stack exhausts (27, 28). The edge with the fin stacks is drawn at the top:
+Blowers (24–26) and fin-stack exhausts (27, 28). The edge with the fin stacks is drawn at the top (as measured; in the case the board is turned 180°, `board_flip`):
 
 | Blower | 24: intake centre x | 25: intake centre y | 26: intake diameter | 27: fin exhaust start x | 28: fin exhaust width |
 |---|---|---|---|---|---|
@@ -78,7 +78,7 @@ If the board isn't a plain rectangle, add a photo taken straight from above with
 
 | # | What | Parameter | Value |
 |---|---|---|---|
-| 33 | Jack body width (plug side) | `dc_window` | not needed: hot-glued in a window |
+| 33 | Jack body width (plug side) | `dc_cut` | not needed: hot-glued in a bottom-wall window |
 | 34 | Jack body height | — | not needed |
 | 35 | Jack body length | — | not needed |
 | 36 | Cable length, jack to board connector | — | very short: the jack can't move, it points out the back |

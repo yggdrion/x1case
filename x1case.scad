@@ -62,18 +62,21 @@ board_h = 138;            // board outline height (measured)
 board_t = 1.2;
 board_bottom_gap = 4;     // board bottom edge above the lid's bottom edge: board sits low, short cables
 // No mounting holes in the model: the standoffs are glued to the flat tray wherever the board puts them.
-// Stock cooler: one blower at each end of the board, heatpipes between, fin stacks on the board's top edge.
-// Blower intake centres [x, y] + intake diameter, relative to the board's bottom-left corner.
+// Board-relative values below are as measured: fin-stack edge on top, from the board's bottom-left corner.
+// board_flip turns the board 180° in its plane: fin stacks at the bottom edge, next to the lid's cable exits.
+board_flip = true;
+// Stock cooler: one blower at each end of the board, heatpipes between, fin stacks on one long edge.
+// Blower intake centres [x, y] + intake diameter.
 blowers = [[56, 88, 41], [290, 90, 41]]; // measured
-// Fin-stack exhausts on the board's top edge: [start x, width]. They blow up into the top vents.
+// Fin-stack exhausts on the fin edge: [start x, width]. Flipped, they blow down into the bottom vents.
 fin_exhausts = [[34, 72], [250, 66]];    // measured
 heatsink_h = 10;          // tallest part on the back side: blowers, ~10 mm (measured)
 comp_h = 5;               // PLACEHOLDER tallest other part on the back side (RAM, SSD)
-// Stock DC-in jack: on a short cable next to the right fin stack. It points out through the back plate,
-// so the charger (brick stays outside the case) plugs in from behind.
-// The jack barely moves, so instead of a fitted sleeve the back plate gets an oversized window around it;
+// Stock DC-in jack: on a short cable next to a fin stack, so with the board flipped it sits at the bottom edge.
+// It points down through an oversized window in the shell's bottom wall (brick stays outside the case);
 // fix the jack in the window with hot glue.
-dc_window = [316, 120, 27, 28]; // [x, y, w, h] from the board's bottom-left corner (jack at ~x 325, at the top edge)
+dc_jack_x = 325;          // jack centre x, board-relative as measured (fin edge on top)
+dc_cut = [27, 16];        // bottom-wall window [width along X, height along Z], from the rim up
 // Optional side-wall cutouts (none by default):
 // [side "L"/"R", y centre rel. board, z offset from the board's back face, w (along Y), h (along Z), name]
 ports = [];
@@ -85,7 +88,7 @@ fan_t = 25;               // standard 120 mm = 25, slim (NF-A12x15) = 15
 fan_clear = 3;            // gap between the heatsink and the fan
 fan_hole_pitch = 105;
 fan_hole_d = 4.4;
-fan_y = 70;               // fan centre height (global): low, over the blower intakes, clear of the DC window
+fan_y = 68;               // fan centre height (global): low, over the blower intakes (y ~60), clear of the bottom screw bosses
 
 /* [VESA 100] */
 vesa = 100;
@@ -117,6 +120,7 @@ cradle_h = 4;
 
 /* [Vents] */
 vent_w = 3;
+vent_w_fin = 5;           // bottom slots in front of the fin-stack exhausts: 5 mm open, 2 mm bars
 vent_pitch = 7;
 vent_end = 20;            // keep vents this far from the side walls
 
@@ -141,6 +145,11 @@ z_in = D - back_t;                  // inside face of the back plate
 
 board_pos = [(W - board_w) / 2, ly0 + board_bottom_gap];
 cable_x = [for (c = cable_exits) [lx0 + c[0], lx0 + c[0] + c[1]]]; // global X ranges
+// board-relative point (as measured) -> global X/Y, honouring board_flip
+function bp(q) = board_pos + (board_flip ? [board_w - q[0], board_h - q[1]] : [q[0], q[1]]);
+blowers_g = [for (b = blowers) concat(bp(b), [b[2]])];                                            // [x, y, d] global
+fins_g = [for (f = fin_exhausts) [bp([f[0] + (board_flip ? f[1] : 0), 0])[0], f[1]]];                  // [start x, width] global
+dc_x = bp([dc_jack_x, 0])[0];                                                            // jack centre, global X
 
 bounds = concat([0], seams, [W]);
 // two 120 mm fans against the side walls, each over a blower intake
@@ -187,7 +196,6 @@ for (f = fan_rects) {
   if (f[0] < shell_wall || f[1] < shell_wall || f[0] + fan_size > W - shell_wall || f[1] + fan_size > H - shell_wall)
     echo("WARNING: a fan does not fit inside the shell walls");
   if (rects_overlap(f, vesa_rect)) echo("WARNING: a fan overlaps the VESA bosses");
-  if (rects_overlap(f, [board_pos[0] + dc_window[0], board_pos[1] + dc_window[1], dc_window[2], dc_window[3]])) echo("WARNING: a fan overlaps the DC jack window");
   for (p = screw_pts) if (rects_overlap(f, [p[0] - boss_d / 2, p[1] - boss_d / 2, boss_d, boss_d])) echo("WARNING: a fan hits a shell screw boss");
 }
 for (s = seams) {
@@ -195,7 +203,9 @@ for (s = seams) {
   if (s > vesa_rect[0] - seam_clear && s < vesa_rect[0] + vesa_rect[2] + seam_clear) echo(str("WARNING: seam ", s, " cuts the VESA pad"));
 }
 for (s = seams, c = cable_x) if (s > c[0] - 5 && s < c[1] + 5) echo(str("WARNING: seam ", s, " cuts a cable channel"));
-for (s = seams) if (s > board_pos[0] + dc_window[0] - 3 && s < board_pos[0] + dc_window[0] + dc_window[2] + 3) echo(str("WARNING: seam ", s, " cuts the DC jack window"));
+for (s = seams) if (abs(s - dc_x) < dc_cut[0] / 2 + 3) echo(str("WARNING: seam ", s, " cuts the DC jack window"));
+for (x = screw_x) if (abs(x - dc_x) < dc_cut[0] / 2 + boss_d / 2) echo(str("WARNING: shell screw at x ", x, " hits the DC jack window"));
+for (c = cable_x) if (dc_x + dc_cut[0] / 2 > c[0] && dc_x - dc_cut[0] / 2 < c[1]) echo("WARNING: DC jack window overlaps a cable channel");
 if (min([bezel[0], bezel[1], bezel[2]]) <= lip_w || bezel[3] <= lip_w_bottom) echo("WARNING: clamp lip covers lit pixels (lip_w or lip_w_bottom >= a bezel value)");
 
 // ---------------------------------------------------------------- helpers
@@ -332,15 +342,17 @@ module shell_full() {
       for (a = [0, 90]) rotate(a + 45) square([fan_size, 4], center = true);
     }
     for (c = fan_cs, dx = [-1, 1], dy = [-1, 1]) translate([c[0] + dx * fan_hole_pitch / 2, c[1] + dy * fan_hole_pitch / 2, z_in - 1]) cylinder(d = fan_hole_d, h = back_t + 2);
-    // vents: bottom = intake, top = exhaust (chimney)
+    // vents: bottom = fin-stack exhaust (board flipped), top = chimney
     for (x = [vent_end : vent_pitch : W - vent_end])
       if (min([for (s = concat(screw_x, seams)) abs(x - s)]) > boss_d / 2 + 2)
-        for (y = [-1, H - shell_wall - 1]) translate([x - vent_w / 2, y, zb + rim_t + 2]) cube([vent_w, shell_wall + 2, z_in - zb - rim_t - 4]);
+        for (y = [-1, H - shell_wall - 1]) if (y > 0 || abs(x - dc_x) > dc_cut[0] / 2 + vent_w)
+          let(vw = y < 0 && len([for (f = fins_g) if (x > f[0] - 2 && x < f[0] + f[1] + 2) 1]) > 0 ? vent_w_fin : vent_w)
+            translate([x - vw / 2, y, zb + rim_t + 2]) cube([vw, shell_wall + 2, z_in - zb - rim_t - 4]);
     // optional side ports, ESP32 USB-C, DC jack
     for (p = ports) port_cut(p);
     translate([W - shell_wall - 1, esp_y + esp_size[1] / 2, z_in - 3.2]) rotate([0, 90, 0]) linear_extrude(shell_wall + 2) rrect(4.5, 10, 1.5);
-    // stock DC-in jack: oversized window in the back plate, jack hot-glued in place
-    translate([board_pos[0] + dc_window[0], board_pos[1] + dc_window[1], z_in - 1]) linear_extrude(back_t + 2) translate([dc_window[2] / 2, dc_window[3] / 2]) rrect(dc_window[2], dc_window[3], 3);
+    // stock DC-in jack: oversized window in the bottom wall, jack hot-glued in place
+    translate([dc_x, -1, zb + rim_t + dc_cut[1] / 2]) rotate([-90, 0, 0]) linear_extrude(shell_wall + 2) rrect(dc_cut[0], dc_cut[1], 3);
     // recess for the tray edge: the rim presses the tray onto the lid
     translate([0, 0, zb - 1]) linear_extrude(tray_t + 1) lid2d(-tray_inset + 0.3);
     // rim stays out of the board footprint: the glued standoffs can sit anywhere under the board
@@ -355,7 +367,7 @@ module shell_clipped() intersection() { shell_full(); cube([W, H, D]); }
 module ghosts() {
   %translate([0, 0, lip_t]) linear_extrude(lid_t) lid2d();
   %translate([board_pos[0], board_pos[1], z_board]) cube([board_w, board_h, board_t]);
-  for (b = blowers) %translate([board_pos[0] + b[0], board_pos[1] + b[1], z_board_back]) cylinder(d = b[2] + 10, h = heatsink_h);
+  for (b = blowers_g) %translate([b[0], b[1], z_board_back]) cylinder(d = b[2] + 10, h = heatsink_h);
   for (f = fan_rects) %translate([f[0], f[1], z_in - fan_t]) cube([fan_size, fan_size, fan_t]);
   %translate([W - shell_wall - esp_size[0], esp_y, z_in - 1.6]) cube([esp_size[0], esp_size[1], 1.6]);
 }
