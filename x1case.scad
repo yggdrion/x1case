@@ -64,7 +64,7 @@ groove_w = 1.2;           // V-groove width at the surface
 /* [Mainboard: PLACEHOLDERS] */
 board_w = 355;            // board outline width (measured)
 board_h = 138;            // board outline height (measured)
-board_t = 1.2;
+board_t = 1;              // measured
 board_bottom_gap = 4;     // board bottom edge above the lid's bottom edge: board sits low, short cables
 // No mounting holes in the model: the standoffs are glued to the flat tray wherever the board puts them.
 // Board-relative values below are as measured: fin-stack edge on top, from the board's bottom-left corner.

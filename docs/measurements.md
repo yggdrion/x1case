@@ -41,10 +41,10 @@ Hinge stubs (13–15, 18). They stick out on the glass side and stay on (no scre
 |---|---|---|---|
 | 19 | Board width | `board_w` | 355 |
 | 20 | Board height | `board_h` | 138 |
-| 29 | Board thickness | `board_t` | |
+| 29 | Board thickness | `board_t` | 1 |
 | 30 | Blowers + heatpipes: height above the board | `heatsink_h` | ~10 (others guessed, with room to spare) |
 | 31 | Tallest other part on the heatsink side (RAM, SSD) | `comp_h` | lower than the blowers: the blowers are the tallest part |
-| 32 | Tallest part on the screen side | `gap` | |
+| 32 | Tallest part on the screen side | `gap` | 1 (very flat): 5 mm standoffs leave 3.8 mm over the taped tray |
 
 Board holes (21–23): not used. The standoffs are screwed to the board and glued to the tray, so their positions don't matter. Kept for reference:
 
