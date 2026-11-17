@@ -10,7 +10,7 @@ The split-and-glue approach follows [yggdrion/wooting-waveshare](https://github.
 
 | Layer | Part | Notes |
 |---|---|---|
-| Front clamp ring | `frame_*` | 4 pieces, printed front face down. A 2 mm lip over the lid's front edge, a 6 mm wall (7.5 mm at the bottom, with the cable channel) and M2 heat-set inserts for the shell screws |
+| Front clamp ring | `frame_*` | 4 pieces, printed front face down. A 1.2 mm lip over the lid's front edge, a 6 mm wall (7.5 mm at the bottom, with the cable channel) and M2 heat-set inserts for the shell screws |
 | Display lid | — | Original. The hinge stubs stay on and stick out 12 mm past the glass; a 14 mm bottom lip covers the open strip along the hinge edge, with an open hole for each stub (cut the stubs off later) |
 | Board tray | `tray_*` | 4 pieces. Covers the lid back up to its edge; the shell squeezes it onto the lid (no screws). Flat: M2 × 5 mm brass standoffs (female-female) screw onto the board and get glued to the tray, so no hole positions need measuring. Aluminium tape with Kapton over it goes on the board side, inside the board footprint only (`tape_t`) |
 | Air gap, board + stock heatsink/blowers | — | Board top side faces the lid, heatsink side faces the back |
@@ -53,7 +53,12 @@ See [docs/measure.png](docs/measure.png) (numbered drawing) and [docs/measuremen
 Small slices of the real parts, to check fit before printing full pieces:
 
 - `test_corner`: bottom-left frame corner (70 × 50 mm). Lay the lid corner in: check the fit gap, corner radius, lip over the bezel, and that the lid back sits flush with the frame back. Print after the lid is measured.
-- `test_seam`: frame + shell halves around the left seam, bottom wall. Check dovetail slide fit, the V-groove, and an M2 × 4 heat-set insert in its hole (melt it in, then screw in an M2 × 10). Independent of the measurements, so it can print now.
+- `test_seam`: frame + shell halves around the left seam, bottom wall. Check dovetail slide fit, the V-groove, and an M2 × 4 heat-set insert in its hole (melt it in, then screw in an M2 × 10).
+- `test_vesa`: one VESA boss with its ribs and the back plate around it. Melt in an M4 insert, bolt on the real mount and pull hard: this boss carries the whole machine.
+- `test_step`: left side wall around the shell step, 4 pieces (frame bottom + top, shell deep box + thin plate). Check the frame's horizontal dovetail, the shell butt joint, and the M2 × 6 side screw through the 2 mm counterbore floor of the thin plate.
+- `test_fan`: strip of the left fan's back plate with its two bottom screw holes. Hold the real fan against it to check the 105 mm hole pitch and the screws.
+
+`test_seam`, `test_vesa`, `test_step` and `test_fan` don't depend on the measurements, so they can print now.
 
 Tune `fit`, `tol` and `insert_d` from the results.
 
@@ -72,4 +77,4 @@ Photo renders (Blender 5.x, stand-in board, cooler, fans, electronics, tray tape
 ![render](images/render_exploded.png)
 ![inside](images/render_inside.png)
 
-Parts: `frame|tray|shell` + `_` + column `l|r` + row `b|t` (e.g. `shell_lb`), `test_corner`, `test_seam`, plus `assembly` (with `explode` and `show_ghosts`).
+Parts: `frame|tray|shell` + `_` + column `l|r` + row `b|t` (e.g. `shell_lb`), `test_corner`, `test_seam`, `test_vesa`, `test_step`, `test_fan`, plus `assembly` (with `explode` and `show_ghosts`).

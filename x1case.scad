@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_lb, frame_lt, frame_rb, frame_rt, tray_lb, tray_lt, tray_rb, tray_rt, shell_lb, shell_lt, shell_rb, shell_rt, test_corner, test_seam]
+part = "assembly"; // [assembly, frame_lb, frame_lt, frame_rb, frame_rt, tray_lb, tray_lt, tray_rb, tray_rt, shell_lb, shell_lt, shell_rb, shell_rt, test_corner, test_seam, test_vesa, test_step, test_fan]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -427,9 +427,41 @@ module test_seam() {
   }
 }
 
+// One VESA boss (bottom right) with its ribs and back plate (back part only), back face down: M4 insert pull-out test.
+module test_vesa() {
+  b = [vesa_c[0] + vesa / 2 - 20, vesa_c[1] - vesa / 2 - 12, 40, 34];
+  translate([-b[0], -b[1], D]) mirror([0, 0, 1]) intersection() {
+    shell_clipped();
+    translate([b[0], b[1], z_in - vesa_boss_h - 0.01]) cube([b[2], b[3], vesa_boss_h + back_t + 1]);
+  }
+}
+
+// Left side wall around the step: frame bottom + top (front down), shell deep box + thin plate (back down),
+// with the frame's horizontal dovetail, the shell butt joint and the side screw (M2 x 6 into an insert).
+module test_step() {
+  b = [0, hseam - 20, 35, 40];
+  for (j = [0, 1]) translate([-b[0] + j * 45, -b[1], 0]) {
+    test_cut(b) split(0, j, frame_tabs, frame_htabs) frame_full();
+    translate([90, 0, j == 1 ? zb + top_t : D]) mirror([0, 0, 1]) test_cut(b) split(0, j, shell_tabs, shell_htabs) shell_clipped();
+  }
+}
+
+// Strip of the left fan's back plate with its two bottom screw holes: hole pitch and grille against the real fan.
+module test_fan() {
+  c = fan_cs[0];
+  b = [c[0] - fan_hole_pitch / 2 - 6, c[1] - fan_hole_pitch / 2 - 7.5, fan_hole_pitch + 12, 13.5]; // stops below the outer grille band, so no loose island
+  translate([-b[0], -b[1], D]) mirror([0, 0, 1]) intersection() {
+    shell_clipped();
+    translate([b[0], b[1], z_in - 0.01]) cube([b[2], b[3], back_t + 1]);
+  }
+}
+
 if (part == "assembly") assembly();
 else if (part == "test_corner") test_corner();
 else if (part == "test_seam") test_seam();
+else if (part == "test_vesa") test_vesa();
+else if (part == "test_step") test_step();
+else if (part == "test_fan") test_fan();
 else {
   kind = substr(part);
   i = idx(part[len(part) - 2]);
