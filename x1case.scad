@@ -39,7 +39,7 @@ cable_d = 4.5;            // channel depth below the lid edge, inside the bottom
 /* [Case] */
 clamp_wall = 6;           // clamp wall left, right and top: thick enough for an M2 heat-set insert (1.4 mm around the hole)
 clamp_wall_bottom = 7.5;  // bottom clamp wall, holds the cable channel
-lip_t = 2;          // front lip thickness
+lip_t = 1.2;        // front lip thickness: 6 layers at 0.2 mm; thin so the glass sits close to the front
 tray_t = 2;         // board tray on the lid back
 gap = 5;            // air gap between tray and board: M2 x 5 brass standoffs (female-female), screwed to the board and glued to the tray
 shell_wall = 3;     // back shell side walls
