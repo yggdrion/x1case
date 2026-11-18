@@ -478,7 +478,7 @@ stand_base = [-25, 150, 3]; // base strip to tape down: [front, back, thickness]
 stand_x = 95;         // preview only: shoe position from each lid edge
 // Fan foot: stands at one end of the lid and holds a 120 mm fan upright, screwless: two cradles grip
 // the fan's bottom corners. Fan axis along the lid, blowing along the gap between lid and board.
-stand_fan_z = 20;     // fan bottom edge above the cardboard: fan centre ~ middle of the board
+stand_fan_z = 5;      // fan bottom edge above the cardboard: low, fan still covers most of the board
 stand_fan_grip = 15;  // cradle walls above the floor
 stand_fan_clip = 18;  // cradle length along the fan's bottom edge
 
