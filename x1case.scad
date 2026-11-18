@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_lb, frame_lt, frame_rb, frame_rt, tray_lb, tray_lt, tray_rb, tray_rt, shell_lb, shell_lt, shell_rb, shell_rt, test_corner, test_seam, test_vesa, test_step, test_fan, stand_l, stand_r]
+part = "assembly"; // [assembly, frame_lb, frame_lt, frame_rb, frame_rt, tray_lb, tray_lt, tray_rb, tray_rt, shell_lb, shell_lt, shell_rb, shell_rt, test_corner, test_seam, test_vesa, test_step, test_fan, stand_shoe]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -458,74 +458,49 @@ module test_fan() {
 }
 
 // ---------------------------------------------------------------- interim stand
-// Two feet that hold the bare lid upright by its side edges until the case is printed.
-// The feet sit outside the lid outline, so the board lies flat on the desk between them,
-// under the lid (on its standoffs, blowers up). An arm under the lid's bottom edge catches the
-// hinge stub in a pocket, so the lid locks both feet together and they can't slide apart.
-// Printed lying on the outer face, no supports.
-// Local coords: x = across (inner face at x = stand_w, lid edge toward +x), y = front to back, z = up.
+// Two identical shoes that hold the bare lid upright until the case is printed. Each shoe sits under
+// the lid's bottom edge, between the corner and the hinge stub; the stub butts against the shoe's
+// front wall, so the two stubs keep the lid from sliding sideways. Tape the shoes onto cardboard.
+// The shoe is one side profile extruded stand_len: printed lying on that profile, no supports.
+// Profile coords: x = front to back (glass side toward -x), y = up.
 stand_tilt = 12;      // lid leans back by this much
-stand_h = 40;         // lid bottom edge above the desk: board on standoffs + blowers + air over the intakes
-stand_grip = 80;      // how far the lid's side edge sits in the slot
-stand_slot_d = 7;     // slot depth into the lid's side edge: stays inside the 8 mm side bezel
-stand_w = 10;         // foot thickness outside the lid edge
-stand_wall = 6;       // slot walls front and back
-stand_ledge = 5;      // floor under the lid's bottom edge
-stand_arm_wall = 4;   // pocket walls around the hinge stub
-stand_base = [-50, 110, 6]; // base bar: [front y, back y, thickness]
-stand_flange = [30, 2];     // flat strip inward from the base bar, to tape the foot onto cardboard: [width, thickness]
+stand_h = 12;         // lid bottom edge above the cardboard: low, for the short eDP cable; cables leave outside the shoes
+stand_grip = 20;      // slot depth along the lid
+stand_wall = 4;       // slot walls front and back
+stand_len = 30;       // shoe width along the lid's bottom edge: fits between the corner and the stub
+stand_base = [-25, 40, 3]; // base strip to tape down: [front, back, thickness]
 
-if (stand_h - stand_ledge - stand_slot_d < gap + board_t + heatsink_h + 5)
-  echo("WARNING: stand_h leaves no air over the blowers");
-if (lid_w < board_w + 2) echo("WARNING: board does not fit between the stand feet");
+if (stand_len > stubs[0][0] - 2) echo("WARNING: stand shoe is wider than the corner-to-stub gap");
 
-module stand_foot() {
+module stand_profile() {
   slot = lid_t + 2 * fit;
   pw = slot + 2 * stand_wall;
   zl = stand_h / cos(stand_tilt);              // lid bottom edge, along the post
-  L = zl + stand_grip;
-  wf = stand_w + stand_slot_d;                 // full width, where the slot is
-  t = stubs[0];                                // [x from the lid edge, width, height]; the right stub mirrors it
-  sx0 = stand_w + t[0] - stub_clear;           // stub pocket, x
-  sx1 = stand_w + t[0] + t[1] + stub_clear;
-  xa = sx1 + stand_arm_wall;                   // arm end
-  sy = -slot / 2 - stub_out - stub_clear;      // stub tip (glass side is -y)
-  ya = sy - stand_arm_wall;                    // arm front
-  module pbox(x0, x1, y0, y1, z0, z1) rotate([-stand_tilt, 0, 0]) translate([x0, y0, z0]) cube([x1 - x0, y1 - y0, z1 - z0]);
-  module post(x0, x1, z0, z1) pbox(x0, x1, -pw / 2, pw / 2, z0, z1);
+  module post(z1) rotate(-stand_tilt) translate([-pw / 2, 0]) square([pw, z1]);
   intersection() {
     difference() {
       union() {
-        translate([0, stand_base[0], 0]) cube([stand_w, stand_base[1] - stand_base[0], stand_base[2]]);
-        translate([0, stand_base[0], 0]) cube([stand_w + stand_flange[0], stand_base[1] - stand_base[0], stand_flange[1]]);
-        hull() { // gusset
-          translate([0, -35, 0]) cube([stand_w, 75, stand_base[2]]);
-          post(0, stand_w, 0, zl - stand_ledge - 10);
-        }
-        post(0, stand_w, 0, L);
-        post(0, wf, zl - stand_ledge, L);
-        // arm along the lid's bottom edge, from the outer face (prints on top of the post layers)
-        pbox(0, xa, ya, pw / 2, zl - stand_ledge, zl);                // under the lid
-        pbox(0, xa, ya, -slot / 2, zl - stand_ledge, zl + t[2]);     // in front of the glass, around the stub
+        translate([stand_base[0], 0]) square([stand_base[1] - stand_base[0], stand_base[2]]);
+        hull() { translate([-pw, 0]) square([2 * pw, stand_base[2]]); post(zl); }
+        post(zl + stand_grip);
       }
-      rotate([-stand_tilt, 0, 0]) translate([stand_w, -slot / 2, zl]) cube([stand_slot_d + 1, slot, L]);
-      pbox(sx0, sx1, sy, -slot / 2 + 0.01, zl, zl + t[2] + 1);    // stub pocket, open at the top
+      rotate(-stand_tilt) translate([-slot / 2, zl]) square([slot, stand_grip + 1]);
     }
-    translate([-1, -200, 0]) cube([xa + 2, 400, 400]);
+    translate([-100, 0]) square([200, 200]);
   }
 }
 
-// One foot on its outer face, as printed. m = 1: the mirrored (right) foot.
-module stand(m) rotate([0, m ? 90 : -90, 0]) mirror([m, 0, 0]) stand_foot();
+module stand() linear_extrude(stand_len) stand_profile();
 
 if (part == "assembly") assembly();
-else if (part == "stand") { // preview: both feet as used, ghost lid
-  stand_foot();
-  translate([2 * stand_w + lid_w, 0, 0]) mirror([1, 0, 0]) stand_foot();
-  %rotate([-stand_tilt, 0, 0]) translate([stand_w, -lid_t / 2, stand_h / cos(stand_tilt)]) cube([lid_w, lid_t, lid_h]);
+else if (part == "stand") { // preview: both shoes as used (corner side out), ghost lid; x = along the lid, y = front to back
+  for (x = [stubs[0][0] - 2 - stand_len, lid_w - stubs[0][0] + 2]) translate([x, 0, 0]) rotate([90, 0, 90]) stand();
+  %rotate([-stand_tilt, 0, 0]) translate([0, -lid_t / 2, stand_h / cos(stand_tilt)]) {
+    cube([lid_w, lid_t, lid_h]);
+    for (t = stubs) translate([t[0], -stub_out, 0]) cube([t[1], stub_out, t[2]]);
+  }
 }
-else if (part == "stand_l") stand(0);
-else if (part == "stand_r") stand(1);
+else if (part == "stand_shoe") stand();
 else if (part == "test_corner") test_corner();
 else if (part == "test_seam") test_seam();
 else if (part == "test_vesa") test_vesa();
