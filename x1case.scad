@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_lb, frame_lt, frame_rb, frame_rt, tray_lb, tray_lt, tray_rb, tray_rt, shell_lb, shell_lt, shell_rb, shell_rt, test_corner, test_seam, test_vesa, test_step, test_fan]
+part = "assembly"; // [assembly, frame_lb, frame_lt, frame_rb, frame_rt, tray_lb, tray_lt, tray_rb, tray_rt, shell_lb, shell_lt, shell_rb, shell_rt, test_corner, test_seam, test_vesa, test_step, test_fan, stand]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -456,7 +456,60 @@ module test_fan() {
   }
 }
 
+// ---------------------------------------------------------------- interim stand
+// Two feet that hold the bare lid upright by its side edges until the case is printed.
+// The feet sit outside the lid outline, so the board lies flat on the desk between them,
+// under the lid (on its standoffs, blowers up). Printed standing on the base, no supports.
+// Local coords: x = across (inner face at x = stand_w, lid edge toward +x), y = front to back, z = up.
+stand_tilt = 12;      // lid leans back by this much
+stand_h = 40;         // lid bottom edge above the desk: board on standoffs + blowers + air over the intakes
+stand_grip = 80;      // how far the lid's side edge sits in the slot
+stand_slot_d = 7;     // slot depth into the lid's side edge: stays inside the 8 mm side bezel
+stand_w = 8;          // foot thickness outside the lid edge
+stand_wall = 6;       // slot walls front and back
+stand_ledge = 5;      // floor under the lid's bottom edge
+stand_base = [-50, 110, 6, 12]; // base bar: [front y, back y, thickness, extra width outward]
+
+if (stand_h - stand_ledge - stand_slot_d < gap + board_t + heatsink_h + 5)
+  echo("WARNING: stand_h leaves no air over the blowers");
+if (lid_w < board_w + 2) echo("WARNING: board does not fit between the stand feet");
+
+module stand_foot() {
+  slot = lid_t + 2 * fit;
+  pw = slot + 2 * stand_wall;
+  zl = stand_h / cos(stand_tilt);              // lid bottom edge, along the post
+  L = zl + stand_grip;
+  wf = stand_w + stand_slot_d;                 // full width, where the slot is
+  module post(x0, x1, z0, z1) rotate([-stand_tilt, 0, 0]) translate([x0, -pw / 2, z0]) cube([x1 - x0, pw, z1 - z0]);
+  intersection() {
+    difference() {
+      union() {
+        translate([-stand_base[3], stand_base[0], 0]) cube([stand_w + stand_base[3], stand_base[1] - stand_base[0], stand_base[2]]);
+        hull() { // gusset
+          translate([0, -35, 0]) cube([stand_w, 75, stand_base[2]]);
+          post(0, stand_w, 0, zl - stand_ledge - stand_slot_d - 10);
+        }
+        post(0, stand_w, 0, L);
+        hull() { // 45° chamfer up to the full-width slot block, so the ledge prints without support
+          post(0, stand_w, zl - stand_ledge - stand_slot_d, zl - stand_ledge);
+          post(0, wf, zl - stand_ledge, zl - stand_ledge + 0.01);
+        }
+        post(0, wf, zl - stand_ledge, L);
+      }
+      rotate([-stand_tilt, 0, 0]) translate([stand_w, -slot / 2, zl]) cube([stand_slot_d + 1, slot, L]);
+    }
+    translate([-50, -200, 0]) cube([100, 400, 400]);
+  }
+}
+
+// Left and right foot side by side (mirror pair), as printed.
+module stand() {
+  translate([stand_base[3], 0, 0]) stand_foot();
+  translate([2 * (stand_base[3] + stand_w + stand_slot_d) + 20, 0, 0]) mirror([1, 0, 0]) stand_foot();
+}
+
 if (part == "assembly") assembly();
+else if (part == "stand") stand();
 else if (part == "test_corner") test_corner();
 else if (part == "test_seam") test_seam();
 else if (part == "test_vesa") test_vesa();
