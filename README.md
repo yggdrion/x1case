@@ -64,7 +64,7 @@ Tune `fit`, `tol` and `insert_d` from the results.
 
 ## Interim stand
 
-`stand`: two feet (a mirrored pair, one STL) that hold the bare lid upright until the case is printed. Each foot grips a side edge of the lid in a 7 mm deep slot (inside the 8 mm side bezel), leaning back `stand_tilt` (12°), with the lid's bottom edge `stand_h` (40 mm) above the desk. The feet sit outside the lid outline, so the board lies flat on the desk between them and under the lid: on its M2 × 5 standoffs, screen side down, blowers up. The eDP cable (~120 mm) reaches from the lid's bottom edge. Print standing on the base, no supports.
+`stand_l`, `stand_r`: two feet that hold the bare lid upright until the case is printed (`stand` previews them with a ghost lid). Each foot grips a side edge of the lid in a 7 mm deep slot (inside the 8 mm side bezel), leaning back `stand_tilt` (12°), with the lid's bottom edge `stand_h` (40 mm) above the desk. An arm under the lid's bottom edge catches the hinge stub in a pocket, so the lid ties the two feet together and they can't slide apart. A 2 mm flange (`stand_flange`) reaches 30 mm inward from each base, so the feet can be taped onto a sheet of cardboard. The feet sit outside the lid outline, so the board lies flat between them and under the lid: on its M2 × 5 standoffs, screen side down, blowers up. The eDP cable (~120 mm) reaches from the lid's bottom edge. Set the lid in from above. Print lying on the outer face, no supports.
 
 ![stand](images/stand.png)
 
