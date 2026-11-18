@@ -471,9 +471,10 @@ stand_grip = 20;      // front wall height along the lid
 stand_grip_back = 45; // wall between lid and board: the lid leans on it, so taller = less force on it and the lid's bottom edge
 stand_wall = 4;       // slot walls
 stand_board_slot = board_t + 2 + 2 * fit; // board slot: board plus ~1 mm of parts on each face at the edge
-stand_board_lip = 8;  // rear lip behind the board, along the board: only touches the bottom 8 mm of the heatsink side
+stand_board_lip = 8;  // rear lip behind the board, along the board: hugs the bottom 8 mm of the heatsink side
+stand_board_stop = [25, 5]; // lip above that: [height along the board, step back to clear coils and heatpipes]; stops the board leaning back
 stand_len = 30;       // shoe width along the edges
-stand_base = [-25, 45, 3]; // base strip to tape down: [front, back, thickness]
+stand_base = [-25, 120, 3]; // base strip to tape down: [front, back, thickness]; long at the back, the lid and board lean back
 stand_x = 95;         // preview only: shoe position from each lid edge
 
 module stand_profile() {
@@ -492,12 +493,17 @@ module stand_profile() {
         col(x0, x1, zl);
         col(x0, -slot / 2, zl + stand_grip);   // front wall
         col(slot / 2, xb, zl + stand_grip_back); // wall between lid and board
-        hull() { col(xl, x1, zl + stand_board_lip); translate([xl, 0]) square([stand_base[1] - 5 - xl, stand_base[2]]); } // rear lip + buttress
+        col(xl, x1, zl + stand_board_lip);   // rear lip
+        hull() { // stop above it, stepped back, with a buttress down to the base
+          col(xl + stand_board_stop[1], x1 + stand_board_stop[1], zl + stand_board_stop[0]);
+          translate([xl, 0]) square([50, stand_base[2]]);
+        }
       }
       rotate(-stand_tilt) translate([-slot / 2, zl]) square([slot, 200]);
       rotate(-stand_tilt) translate([xb, zl]) square([stand_board_slot, 200]);
+      rotate(-stand_tilt) translate([xb, zl + stand_board_lip]) square([stand_board_slot + stand_board_stop[1], 200]);
     }
-    translate([-100, 0]) square([200, 200]);
+    translate([-100, 0]) square([300, 200]);
   }
 }
 
