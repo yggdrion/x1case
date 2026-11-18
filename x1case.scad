@@ -465,7 +465,8 @@ module test_fan() {
 // Profile coords: x = front to back (glass side toward -x), y = up.
 stand_tilt = 12;      // lid leans back by this much
 stand_h = 12;         // lid bottom edge above the cardboard: low, for the short eDP cable; cables leave outside the shoes
-stand_grip = 20;      // slot depth along the lid
+stand_grip = 20;      // slot depth along the lid (front wall)
+stand_grip_back = 45; // back wall height along the lid: the lid leans on it, so taller = less force on it and the lid's bottom edge
 stand_wall = 4;       // slot walls front and back
 stand_len = 30;       // shoe width along the lid's bottom edge: fits between the corner and the stub
 stand_base = [-25, 40, 3]; // base strip to tape down: [front, back, thickness]
@@ -483,8 +484,12 @@ module stand_profile() {
         translate([stand_base[0], 0]) square([stand_base[1] - stand_base[0], stand_base[2]]);
         hull() { translate([-pw, 0]) square([2 * pw, stand_base[2]]); post(zl); }
         post(zl + stand_grip);
+        hull() { // back wall, with a buttress down to the base
+          rotate(-stand_tilt) translate([slot / 2, 0]) square([stand_wall, zl + stand_grip_back]);
+          translate([0, 0]) square([stand_base[1] - 5, stand_base[2]]);
+        }
       }
-      rotate(-stand_tilt) translate([-slot / 2, zl]) square([slot, stand_grip + 1]);
+      rotate(-stand_tilt) translate([-slot / 2, zl]) square([slot, stand_grip_back + 1]);
     }
     translate([-100, 0]) square([200, 200]);
   }
