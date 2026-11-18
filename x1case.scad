@@ -10,7 +10,7 @@
 //
 // Set `part`, render (F6) and export STL. Printable parts come out oriented for printing.
 
-part = "assembly"; // [assembly, frame_lb, frame_lt, frame_rb, frame_rt, tray_lb, tray_lt, tray_rb, tray_rt, shell_lb, shell_lt, shell_rb, shell_rt, test_corner, test_seam, test_vesa, test_step, test_fan, stand_shoe]
+part = "assembly"; // [assembly, frame_lb, frame_lt, frame_rb, frame_rt, tray_lb, tray_lt, tray_rb, tray_rt, shell_lb, shell_lt, shell_rb, shell_rt, test_corner, test_seam, test_vesa, test_step, test_fan, stand_shoe, stand_fan]
 
 /* [Print] */
 bed = 256;          // Bambu Lab P2S bed (mm)
@@ -470,17 +470,22 @@ stand_h = 12;         // lid and board bottom edges above the cardboard: low, fo
 stand_grip = 20;      // front wall height along the lid
 stand_grip_back = 45; // wall between lid and board: the lid leans on it, so taller = less force on it and the lid's bottom edge
 stand_wall = 4;       // slot walls
+stand_gap = 20;       // air gap between the lid's back and the board's chip side (eats ~16 mm of eDP cable slack)
 stand_board_slot = board_t + 2 * fit + 1 + 6; // board slot: board, 1 mm of parts on the chip side, 6 mm for the coils on the heatsink side
 stand_board_wall = 40; // rear wall height along the board: the board leans back onto its top
 stand_len = 30;       // shoe width along the edges
 stand_base = [-25, 150, 3]; // base strip to tape down: [front, back, thickness]; long at the back, the lid and board lean back
 stand_x = 95;         // preview only: shoe position from each lid edge
+// Fan foot: stands at one end of the lid and holds a 120 mm fan upright by its two bottom screw holes,
+// axis along the lid, blowing along the gap between lid and board. Tape it down next to the lid's end.
+stand_fan_z = 20;     // fan bottom edge above the cardboard: fan centre ~ middle of the board
+stand_fan_tab = [12, 5]; // tab: [width, thickness]
 
 module stand_profile() {
   slot = lid_t + 2 * fit;
   zl = stand_h / cos(stand_tilt);              // lid and board bottom edges, along the post
   x0 = -slot / 2 - stand_wall;                 // front face
-  xb = slot / 2 + stand_wall;                  // board slot front (= board's chip side)
+  xb = slot / 2 + stand_gap;                   // board slot front (= board's chip side)
   xl = xb + stand_board_slot;                  // rear lip
   x1 = xl + stand_wall;                        // back face
   module col(xa, xe, z1) rotate(-stand_tilt) translate([xa, 0]) square([xe - xa, z1]);
@@ -506,6 +511,22 @@ module stand_profile() {
 
 module stand() linear_extrude(stand_len) stand_profile();
 
+// As printed and as used (base down). x = across the fan face, y = along the fan axis (fan toward +y), z = up.
+module stand_fan() {
+  zh = stand_fan_z + (fan_size - fan_hole_pitch) / 2;   // bottom screw holes
+  th = zh + stand_fan_tab[0] / 2 + 2;
+  difference() {
+    union() {
+      translate([-fan_size / 2 - 5, -stand_fan_tab[1] - 10, 0]) cube([fan_size + 10, stand_fan_tab[1] + 10 + fan_t + 15, 3]);
+      for (k = [-1, 1]) translate([k * fan_hole_pitch / 2, 0, 0]) hull() {
+        translate([-stand_fan_tab[0] / 2, -stand_fan_tab[1], 0]) cube([stand_fan_tab[0], stand_fan_tab[1], th]);
+        translate([-stand_fan_tab[0] / 2, -stand_fan_tab[1] - 10, 0]) cube([stand_fan_tab[0], 10, 3]); // gusset
+      }
+    }
+    for (k = [-1, 1]) translate([k * fan_hole_pitch / 2, 1, zh]) rotate([90, 0, 0]) cylinder(d = fan_hole_d, h = 30);
+  }
+}
+
 if (part == "assembly") assembly();
 else if (part == "stand") { // preview: both shoes as used, ghost lid and board; x = along the lid, y = front to back
   zl = stand_h / cos(stand_tilt);
@@ -515,10 +536,16 @@ else if (part == "stand") { // preview: both shoes as used, ghost lid and board;
       cube([lid_w, lid_t, lid_h]);
       for (t = stubs) translate([t[0], -stub_out, 0]) cube([t[1], stub_out, t[2]]);
     }
-    translate([(lid_w - board_w) / 2, lid_t / 2 + fit + stand_wall + 1, zl]) cube([board_w, board_t, board_h]);
+    translate([(lid_w - board_w) / 2, lid_t / 2 + fit + stand_gap + 1, zl]) cube([board_w, board_t, board_h]);
+  }
+  gy = (lid_t / 2 + fit + stand_gap / 2) ; // gap centre at the bottom
+  translate([-fan_t - 5, gy, 0]) rotate([0, 0, -90]) {
+    stand_fan();
+    %translate([-fan_size / 2, 0, stand_fan_z]) cube([fan_size, fan_t, fan_size]);
   }
 }
 else if (part == "stand_shoe") stand();
+else if (part == "stand_fan") stand_fan();
 else if (part == "test_corner") test_corner();
 else if (part == "test_seam") test_seam();
 else if (part == "test_vesa") test_vesa();
