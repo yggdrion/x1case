@@ -476,10 +476,11 @@ stand_board_wall = 40; // rear wall height along the board: the board leans back
 stand_len = 30;       // shoe width along the edges
 stand_base = [-25, 150, 3]; // base strip to tape down: [front, back, thickness]; long at the back, the lid and board lean back
 stand_x = 95;         // preview only: shoe position from each lid edge
-// Fan foot: stands at one end of the lid and holds a 120 mm fan upright by its two bottom screw holes,
-// axis along the lid, blowing along the gap between lid and board. Tape it down next to the lid's end.
+// Fan foot: stands at one end of the lid and holds a 120 mm fan upright, screwless: two cradles grip
+// the fan's bottom corners. Fan axis along the lid, blowing along the gap between lid and board.
 stand_fan_z = 20;     // fan bottom edge above the cardboard: fan centre ~ middle of the board
-stand_fan_tab = [12, 5]; // tab: [width, thickness]
+stand_fan_grip = 15;  // cradle walls above the floor
+stand_fan_clip = 18;  // cradle length along the fan's bottom edge
 
 module stand_profile() {
   slot = lid_t + 2 * fit;
@@ -513,17 +514,15 @@ module stand() linear_extrude(stand_len) stand_profile();
 
 // As printed and as used (base down). x = across the fan face, y = along the fan axis (fan toward +y), z = up.
 module stand_fan() {
-  zh = stand_fan_z + (fan_size - fan_hole_pitch) / 2;   // bottom screw holes
-  th = zh + stand_fan_tab[0] / 2 + 2;
+  w = 3;                                   // walls
+  sl = fan_t + 2 * fit;                    // slot for the fan frame
   difference() {
     union() {
-      translate([-fan_size / 2 - 5, -stand_fan_tab[1] - 10, 0]) cube([fan_size + 10, stand_fan_tab[1] + 10 + fan_t + 15, 3]);
-      for (k = [-1, 1]) translate([k * fan_hole_pitch / 2, 0, 0]) hull() {
-        translate([-stand_fan_tab[0] / 2, -stand_fan_tab[1], 0]) cube([stand_fan_tab[0], stand_fan_tab[1], th]);
-        translate([-stand_fan_tab[0] / 2, -stand_fan_tab[1] - 10, 0]) cube([stand_fan_tab[0], 10, 3]); // gusset
-      }
+      translate([-fan_size / 2 - w, -w - 15, 0]) cube([fan_size + 2 * w, sl + 2 * w + 30, 3]); // base, tape it down
+      for (k = [-1, 1]) translate([k * (fan_size / 2 + w - stand_fan_clip / 2 - w / 2) - (stand_fan_clip + w) / 2, -w, 0])
+        cube([stand_fan_clip + w, sl + 2 * w, stand_fan_z + stand_fan_grip]);
     }
-    for (k = [-1, 1]) translate([k * fan_hole_pitch / 2, 1, zh]) rotate([90, 0, 0]) cylinder(d = fan_hole_d, h = 30);
+    translate([-fan_size / 2 - fit, 0, stand_fan_z]) cube([fan_size + 2 * fit, sl, 100]);
   }
 }
 
@@ -541,7 +540,7 @@ else if (part == "stand") { // preview: both shoes as used, ghost lid and board;
   gy = (lid_t / 2 + fit + stand_gap / 2) ; // gap centre at the bottom
   translate([-fan_t - 5, gy, 0]) rotate([0, 0, -90]) {
     stand_fan();
-    %translate([-fan_size / 2, 0, stand_fan_z]) cube([fan_size, fan_t, fan_size]);
+    %translate([-fan_size / 2, fit, stand_fan_z]) cube([fan_size, fan_t, fan_size]);
   }
 }
 else if (part == "stand_shoe") stand();
