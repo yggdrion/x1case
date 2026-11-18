@@ -458,38 +458,44 @@ module test_fan() {
 }
 
 // ---------------------------------------------------------------- interim stand
-// Two identical shoes that hold the bare lid upright until the case is printed. Each shoe sits under
-// the lid's bottom edge, between the corner and the hinge stub; the stub butts against the shoe's
-// front wall, so the two stubs keep the lid from sliding sideways. Tape the shoes onto cardboard.
+// Two identical shoes that hold the bare lid upright and the board behind it until the case is
+// printed. Board as in the case: fin edge down (exhaust points down), flat chip side toward the lid,
+// heatsink side back. Each shoe has two slots: the lid's bottom edge in front, the board's bottom
+// edge behind it, held by a short rear lip. Place the shoes where the board's bottom edge has no
+// fins and the lid's bottom edge has no cables. Tape them onto cardboard.
 // The shoe is one side profile extruded stand_len: printed lying on that profile, no supports.
 // Profile coords: x = front to back (glass side toward -x), y = up.
-stand_tilt = 12;      // lid leans back by this much
-stand_h = 12;         // lid bottom edge above the cardboard: low, for the short eDP cable; cables leave outside the shoes
-stand_grip = 20;      // slot depth along the lid (front wall)
-stand_grip_back = 45; // back wall height along the lid: the lid leans on it, so taller = less force on it and the lid's bottom edge
-stand_wall = 4;       // slot walls front and back
-stand_len = 30;       // shoe width along the lid's bottom edge: fits between the corner and the stub
-stand_base = [-25, 40, 3]; // base strip to tape down: [front, back, thickness]
-
-if (stand_len > stubs[0][0] - 2) echo("WARNING: stand shoe is wider than the corner-to-stub gap");
+stand_tilt = 12;      // lid and board lean back by this much
+stand_h = 12;         // lid and board bottom edges above the cardboard: low, for the short eDP cable
+stand_grip = 20;      // front wall height along the lid
+stand_grip_back = 45; // wall between lid and board: the lid leans on it, so taller = less force on it and the lid's bottom edge
+stand_wall = 4;       // slot walls
+stand_board_slot = board_t + 2 + 2 * fit; // board slot: board plus ~1 mm of parts on each face at the edge
+stand_board_lip = 8;  // rear lip behind the board, along the board: only touches the bottom 8 mm of the heatsink side
+stand_len = 30;       // shoe width along the edges
+stand_base = [-25, 45, 3]; // base strip to tape down: [front, back, thickness]
+stand_x = 95;         // preview only: shoe position from each lid edge
 
 module stand_profile() {
   slot = lid_t + 2 * fit;
-  pw = slot + 2 * stand_wall;
-  zl = stand_h / cos(stand_tilt);              // lid bottom edge, along the post
-  module post(z1) rotate(-stand_tilt) translate([-pw / 2, 0]) square([pw, z1]);
+  zl = stand_h / cos(stand_tilt);              // lid and board bottom edges, along the post
+  x0 = -slot / 2 - stand_wall;                 // front face
+  xb = slot / 2 + stand_wall;                  // board slot front (= board's chip side)
+  xl = xb + stand_board_slot;                  // rear lip
+  x1 = xl + stand_wall;                        // back face
+  module col(xa, xe, z1) rotate(-stand_tilt) translate([xa, 0]) square([xe - xa, z1]);
   intersection() {
     difference() {
       union() {
         translate([stand_base[0], 0]) square([stand_base[1] - stand_base[0], stand_base[2]]);
-        hull() { translate([-pw, 0]) square([2 * pw, stand_base[2]]); post(zl); }
-        post(zl + stand_grip);
-        hull() { // back wall, with a buttress down to the base
-          rotate(-stand_tilt) translate([slot / 2, 0]) square([stand_wall, zl + stand_grip_back]);
-          translate([0, 0]) square([stand_base[1] - 5, stand_base[2]]);
-        }
+        hull() { translate([x0 - 12, 0]) square([30, stand_base[2]]); col(x0, x1, zl); } // front gusset + floor
+        col(x0, x1, zl);
+        col(x0, -slot / 2, zl + stand_grip);   // front wall
+        col(slot / 2, xb, zl + stand_grip_back); // wall between lid and board
+        hull() { col(xl, x1, zl + stand_board_lip); translate([xl, 0]) square([stand_base[1] - 5 - xl, stand_base[2]]); } // rear lip + buttress
       }
-      rotate(-stand_tilt) translate([-slot / 2, zl]) square([slot, stand_grip_back + 1]);
+      rotate(-stand_tilt) translate([-slot / 2, zl]) square([slot, 200]);
+      rotate(-stand_tilt) translate([xb, zl]) square([stand_board_slot, 200]);
     }
     translate([-100, 0]) square([200, 200]);
   }
@@ -498,11 +504,15 @@ module stand_profile() {
 module stand() linear_extrude(stand_len) stand_profile();
 
 if (part == "assembly") assembly();
-else if (part == "stand") { // preview: both shoes as used (corner side out), ghost lid; x = along the lid, y = front to back
-  for (x = [stubs[0][0] - 2 - stand_len, lid_w - stubs[0][0] + 2]) translate([x, 0, 0]) rotate([90, 0, 90]) stand();
-  %rotate([-stand_tilt, 0, 0]) translate([0, -lid_t / 2, stand_h / cos(stand_tilt)]) {
-    cube([lid_w, lid_t, lid_h]);
-    for (t = stubs) translate([t[0], -stub_out, 0]) cube([t[1], stub_out, t[2]]);
+else if (part == "stand") { // preview: both shoes as used, ghost lid and board; x = along the lid, y = front to back
+  zl = stand_h / cos(stand_tilt);
+  for (x = [stand_x, lid_w - stand_x - stand_len]) translate([x, 0, 0]) rotate([90, 0, 90]) stand();
+  %rotate([-stand_tilt, 0, 0]) {
+    translate([0, -lid_t / 2, zl]) {
+      cube([lid_w, lid_t, lid_h]);
+      for (t = stubs) translate([t[0], -stub_out, 0]) cube([t[1], stub_out, t[2]]);
+    }
+    translate([(lid_w - board_w) / 2, lid_t / 2 + fit + stand_wall + 1, zl]) cube([board_w, board_t, board_h]);
   }
 }
 else if (part == "stand_shoe") stand();
