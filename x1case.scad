@@ -478,19 +478,15 @@ module stand_profile() {
   pw = slot + 2 * stand_wall;
   zl = stand_h / cos(stand_tilt);              // lid bottom edge, along the post
   module post(z1) rotate(-stand_tilt) translate([-pw / 2, 0]) square([pw, z1]);
-  module buttress() hull() {
-    rotate(-stand_tilt) translate([slot / 2, 0]) square([stand_wall, zl + stand_grip_back]);
-    square([stand_base[1] - 5, stand_base[2]]);
-  }
   intersection() {
     difference() {
       union() {
         translate([stand_base[0], 0]) square([stand_base[1] - stand_base[0], stand_base[2]]);
         hull() { translate([-pw, 0]) square([2 * pw, stand_base[2]]); post(zl); }
         post(zl + stand_grip);
-        difference() { // back wall with a buttress down to the base: a hollow triangle, 4 mm frame
-          buttress();
-          offset(delta = -stand_wall) buttress();
+        hull() { // back wall, with a buttress down to the base
+          rotate(-stand_tilt) translate([slot / 2, 0]) square([stand_wall, zl + stand_grip_back]);
+          translate([0, 0]) square([stand_base[1] - 5, stand_base[2]]);
         }
       }
       rotate(-stand_tilt) translate([-slot / 2, zl]) square([slot, stand_grip_back + 1]);
