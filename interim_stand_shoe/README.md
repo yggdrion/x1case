@@ -10,6 +10,8 @@ One-piece interim stand for the bare lid and board: two shoes joined by a vertic
 | `stand_shoe.stl` | the part, ready to print |
 | `solidcraft.json` | SolidCraft batch that rebuilds it (`batch` with `path`) |
 | `profile.png`, `preview.png` | side profile and iso view |
+| `stand_shoe.3mf` | same part standing on its base, centred on the 256 mm bed, ready to open in Bambu Studio (`print.png` shows it) |
+| `stand_shoe_petg_hf.json` | Bambu Studio process preset for it (inherits 0.20mm Standard @BBL P2S) |
 
 ## Design
 
@@ -20,3 +22,10 @@ One-piece interim stand for the bare lid and board: two shoes joined by a vertic
 - Size 97 x 130 x 140 mm, volume 346 094 mm³, one body.
 - Print standing on the base, no supports. PETG-HF, 5 walls, 40 % gyroid or less (the web is solid), 0.2 mm layers.
 - Strength is a hand estimate: 5 kg design load about 70 mm in front of the plate gives about 3.4 N·m. Inserts see about 17 N pull and 12 N shear each, the plate section above the web about 1 MPa across layers. Not checked by FEA or a print.
+
+## Printing (Bambu Studio, P2S 0.4 mm, Bambu PETG HF)
+
+1. Import `stand_shoe_petg_hf.json` once: File > Import > Import Configs.
+2. Open `stand_shoe.3mf`, pick printer "Bambu Lab P2S 0.4 nozzle", filament "Bambu PETG HF", process "stand shoe PETG-HF".
+3. Preset changes from 0.20mm Standard: 6 walls (was 2), Arachne, thin walls on, 12 % gyroid (was 15 % grid), 4 bottom layers (was 3), back seam, 5 mm outer brim, no supports. The filament preset's own temperature (245 °C) and fan (30 %) stay.
+4. Dry the filament first. Check the layer preview: no gaps in the 4 mm slot walls, no supports, web top closed.
