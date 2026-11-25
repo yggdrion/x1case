@@ -1,4 +1,6 @@
-# stand_shoe
+# interim_stand_shoe
+
+![v2 profile](profile_v2.png)
 
 Interim stand shoe: a 2D profile (XY) extruded 30 mm in Z. Both slots lean back 12°.
 The profile is plain coordinates, not parametric. The model is not tied to `x1case.scad`.

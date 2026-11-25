@@ -15,3 +15,7 @@ openscad -o stl/shell_rb.stl -D 'part="shell_rb"' x1case.scad
 ```
 
 A render must finish with no `WARNING` lines. The file's own echo checks (bed fit, seam vs fan/VESA, fan vs heatsink) print as `WARNING` too.
+
+## interim_stand_shoe
+
+Stand shoe modeled in SolidCraft, not in the scad. When its model changes, re-export the STL, re-render `profile_*.png`, and update the preview and numbers in `interim_stand_shoe/README.md` in the same commit.
