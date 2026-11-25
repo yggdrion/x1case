@@ -18,4 +18,4 @@ A render must finish with no `WARNING` lines. The file's own echo checks (bed fi
 
 ## interim_stand_shoe
 
-Stand shoe modeled in SolidCraft, not in the scad. When its model changes, re-export the STL, re-render `profile_*.png`, and update the preview and numbers in `interim_stand_shoe/README.md` in the same commit.
+Stand shoe modeled in SolidCraft, not in the scad. One current version only, no version suffixes or history (git has it). When its model changes, re-export `stand_shoe.stl`, re-render `profile.png` and `preview.png`, and update the numbers in `interim_stand_shoe/README.md` in the same commit. Always show the user the new render of every changed variant.
