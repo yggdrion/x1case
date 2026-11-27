@@ -102,7 +102,7 @@ vesa_insert_d = 5.7;      // M4 heat-set insert hole
 vesa_insert_depth = 8.5;
 vesa_boss_d = 14;
 vesa_boss_h = 7;          // inside the shell, from the back plate
-vesa_y = undef;           // pad centre height (global); undef = H / 2. Set it to the measured centre of gravity once the case is weighed
+vesa_y = 108;             // pad centre height (global): estimated centre of gravity (parts weighed by guess, about 2.4 kg); undef = H / 2. Replace with the measured value once the case is weighed
 rib_t = 3;
 rib_h = 6;
 
@@ -159,7 +159,7 @@ dc_x = bp([dc_jack_x, 0])[0];                                                   
 bounds = concat([0], seams, [W]);
 // two 120 mm fans against the side walls, each over a blower intake
 fan_cs = [for (k = [-1, 1]) [W / 2 + k * (W / 2 - shell_wall - fan_size / 2), fan_y]];
-// VESA pad between the fans, at mid-height (centre of gravity), so the arm balances the case in any orientation
+// VESA pad between the fans, at the centre of gravity (vesa_y), so the arm balances the case in any orientation
 vesa_c = [W / 2, vesa_y == undef ? H / 2 : vesa_y];
 // electronics row centred in the VESA square: [x, y] of each cradle's inner corner
 elec_w = esp_size[0] + 2 * buck_size[0] + 2 * elec_gap;
