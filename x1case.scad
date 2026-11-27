@@ -58,7 +58,7 @@ tol = 0.2;          // dovetail glue gap (total)
 /* [Split: seams must avoid the fans, VESA bosses and cable channel] */
 seams = [125.65];          // one real seam (X position), glued dovetails: in the gap between the left fan and the VESA pad
 seam_clear = 2;            // min. distance from a seam to a fan frame or the VESA pad
-hseam = 156;             // horizontal seam (Y position) = the shell step: deep box below (board, cooler, fans, VESA), thin plate above
+hseam = 192;             // horizontal seam (Y position) = the shell step: deep box below (board, cooler, fans, VESA), thin plate above; must clear the VESA pad top
 fake_grooves = true;      // mirrored decorative groove on the right, between the VESA pad and the right fan
 groove_w = 1.2;           // V-groove width at the surface
 
@@ -102,7 +102,7 @@ vesa_insert_d = 5.7;      // M4 heat-set insert hole
 vesa_insert_depth = 8.5;
 vesa_boss_d = 14;
 vesa_boss_h = 7;          // inside the shell, from the back plate
-// VESA pad sits low, between the fans, in the same row as the heavy parts
+vesa_y = undef;           // pad centre height (global); undef = H / 2. Set it to the measured centre of gravity once the case is weighed
 rib_t = 3;
 rib_h = 6;
 
@@ -159,8 +159,8 @@ dc_x = bp([dc_jack_x, 0])[0];                                                   
 bounds = concat([0], seams, [W]);
 // two 120 mm fans against the side walls, each over a blower intake
 fan_cs = [for (k = [-1, 1]) [W / 2 + k * (W / 2 - shell_wall - fan_size / 2), fan_y]];
-// VESA pad between the fans, same height
-vesa_c = [W / 2, fan_y];
+// VESA pad between the fans, at mid-height (centre of gravity), so the arm balances the case in any orientation
+vesa_c = [W / 2, vesa_y == undef ? H / 2 : vesa_y];
 // electronics row centred in the VESA square: [x, y] of each cradle's inner corner
 elec_w = esp_size[0] + 2 * buck_size[0] + 2 * elec_gap;
 esp_pos = [vesa_c[0] - elec_w / 2, vesa_c[1] - esp_size[1] / 2];
